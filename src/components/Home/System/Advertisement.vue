@@ -33,7 +33,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="danger" @click="changeStateAD(checked,'7')"  v-if="hasPrivileges('advert_delete')">删除</el-button>
+                    <el-button type="danger" @click="changeStateAD(checked,'7')"  v-if="hasPrivileges('advert_del')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('advertisement')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="createAdvertisement=true" v-if="hasPrivileges('advert_add')">创建广告</el-button>
@@ -271,7 +271,7 @@
                                 <td>{{item.creator}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)" @click="showEditADNow(item.id)" v-if="hasPrivileges('advert_edit')">编辑</a>
-                                    <a href="javascript:void(0)" @click="changeStateAD(item.id,'7')" v-if="hasPrivileges('advert_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="changeStateAD(item.id,'7')" v-if="hasPrivileges('advert_del')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -317,7 +317,7 @@
 
                 <!--        操作区        -->
                 <div class="table_handle">
-                    <el-button type="primary" @click="changeStateMaterial(material.checked,'7')" v-if="hasPrivileges('advert_delete')">删除</el-button>
+                    <el-button type="primary" @click="changeStateMaterial(material.checked,'7')" v-if="hasPrivileges('advert_del')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('material')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="material.addMaterial=true" v-if="hasPrivileges('advert_add')">添加物料</el-button>
@@ -447,7 +447,7 @@
                                 <td>{{item.creator}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)" @click="showEditMaterialNow(item.id)" v-if="hasPrivileges('advert_edit')">编辑</a>
-                                    <a href="javascript:void(0)" @click="changeStateMaterial(item.id,'7')" v-if="hasPrivileges('advert_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="changeStateMaterial(item.id,'7')" v-if="hasPrivileges('advert_del')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
