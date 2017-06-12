@@ -716,7 +716,7 @@
           if (res.body.code == 200) {
             this.$message({
               type: 'success',
-              message: '添加成功'
+              message: '编辑成功'
             });
           }
 //          this.$emit("change-privileges",privilegesArr);

@@ -47,7 +47,7 @@
             </thead>
             <tbody>
             <tr v-for="item in transaction_data">
-              <td></td>
+              <td>{{item.transactionNo}}</td>
               <td>{{item.orderTime}}</td>
               <td class="td_box">
                 <span>{{item.payerName}}</span>

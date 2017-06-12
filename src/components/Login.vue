@@ -93,7 +93,7 @@ export default {
     }
     .inp_group{
         height: 40px;
-        width: 300px;
+        width: 310px;
         margin: 18px auto;
         margin-top: 0;
         font-size: 0px;

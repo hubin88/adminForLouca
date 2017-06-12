@@ -537,6 +537,7 @@
       }
     },
     beforeCreate: function () {
+      console.log(window.sessionStorage.getItem('loginLoucaUser'));
       if (!!window.sessionStorage.getItem('loginLoucaUser')) {
         var that = this;
         var login = window.sessionStorage.getItem('loginLoucaUser');
