@@ -523,9 +523,9 @@
           </div>
         </li>
         <ul class="second_nav">
-          <router-link :to="{name:'newbuildmessage'}" href="javascript:void(0)">
-            <li class="list"><span>新建群发</span></li>
-          </router-link>
+          <!--<router-link :to="{name:'newbuildmessage'}" href="javascript:void(0)">-->
+            <!--<li class="list"><span>新建群发</span></li>-->
+          <!--</router-link>-->
           <router-link :to="{name:'allMessage'}" href="javascript:void(0)">
             <li class="list"><span>全部消息</span></li>
           </router-link>
