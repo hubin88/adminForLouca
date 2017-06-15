@@ -101,7 +101,7 @@
                 </span>
               </label>
               <span class="el-tree-node__label"
-                    @click="item.isShowChildren=!item.isShowChildren">{{item.label}}/{{item.id}}</span>
+                    @click="item.isShowChildren=!item.isShowChildren">{{item.label}}/{{item.id}}/{{item.symbol}}</span>
               <el-button size="mini">停用</el-button>
               <el-button size="mini" @click="deleteItem(item)">删除</el-button>
               <el-button size="mini" @click="edit(item)">编辑</el-button>
@@ -117,7 +117,7 @@
                       <input type="checkbox" class="el-checkbox__original" value="">
                     </span>
                   </label>
-                  <span class="el-tree-node__label">{{val.label}}</span>
+                  <span class="el-tree-node__label">{{val.label}}/{{val.id}}/{{val.symbol}}</span>
                   <el-button size="mini">停用</el-button>
                   <el-button size="mini" @click="deleteItem(val)">删除</el-button>
                   <el-button size="mini" @click="edit(val)">编辑</el-button>
@@ -578,7 +578,6 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          console.log(item);
           const id = item.id;
           this.$http.delete('http://' + global.URL + '/v1/permission/' + id).then((res) => {
             if (res.body.code == 200 || res.body.code == 201) {
@@ -757,7 +756,7 @@
               if (item.parentId > 0) {
                 this.roleAuthorityList.forEach(val => {
                   if (val.id === item.parentId) {
-                    Object.assign(val, { isShowChildren: true, hasChildren: true });
+                    Object.assign(val, { isShowChildren: false, hasChildren: true });
                     val.children.push({
                       id: item.privilegeId,
                       label: item.name,

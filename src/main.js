@@ -55,6 +55,9 @@ import Authority from './components/Home/System/Authority.vue'
 //account
 import Account from './components/Home/Account/account.vue';
 import Transaction from './components/Home/Account/transaction.vue';
+//message
+import NewBuildMessage from './components/Home/Message/NewBuildMessage.vue';
+import Message from './components/Home/Message/Message.vue';
 
 const router = new VueRouter({
   mode: 'history',
@@ -202,7 +205,18 @@ const router = new VueRouter({
           path: 'account',
           name: 'account',
           component: Account
-        }
+        },
+        //message
+        {
+          path: 'newbuildmessage',
+          name: 'newbuildmessage',
+          component: NewBuildMessage,
+        },
+        {
+          path: 'allMessage',
+          name: 'allMessage',
+          component: Message,
+        },
       ]
     },
     {

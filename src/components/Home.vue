@@ -512,6 +512,25 @@
           </router-link>
         </ul>
 
+        <!-- 群发管理 -->
+        <li class="first_nav">
+          <a href="javascript:void(0)" class="nav_icon">
+            <img src="../assets/home/images/crowd.png" alt="*">
+          </a>
+          <div class="nav_text">
+            群发管理
+            <a href="javascript:void(0)" class="el-icon-arrow-right"></a>
+          </div>
+        </li>
+        <ul class="second_nav">
+          <router-link :to="{name:'newbuildmessage'}" href="javascript:void(0)">
+            <li class="list"><span>新建群发</span></li>
+          </router-link>
+          <router-link :to="{name:'allMessage'}" href="javascript:void(0)">
+            <li class="list"><span>全部消息</span></li>
+          </router-link>
+        </ul>
+
 
       </aside>
 

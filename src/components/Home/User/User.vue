@@ -112,8 +112,16 @@
         <el-dialog title="更改社区" v-model="showEditGroup" size="tiny">
           <el-form :model="editGroup">
             <el-form-item label="社区id" label-width="60px">
-              <el-input-number v-model="editGroup.groupId" :min="10000"
-                               :max="100000"></el-input-number>
+              <!--<el-input-number v-model="editGroup.groupId" :min="10000"-->
+                               <!--:max="100000"></el-input-number>-->
+              <el-cascader
+                v-model="editGroup.groupId"
+                :options="this.addUserOptions.groups"
+                :show-all-levels="false"
+                clearable
+                @active-item-change="handleItemChangeGroups"
+                placeholder="请选择社区"
+              ></el-cascader>
             </el-form-item>
             <el-form-item label="楼层" label-width="60px">
               <el-input-number v-model="editGroup.floor" :min="-100" :max="1000"></el-input-number>
@@ -330,7 +338,7 @@
         },
         editGroup: {
           floor: '',
-          groupId: '',
+          groupId: [],
           userId: '',
         },
         isIndeterminate: false,
@@ -735,14 +743,13 @@
         this.showEditGroup = true;
       },
       editGroupNow(){
-        var obj = {
+        const obj={
           floor: this.editGroup.floor,
-          groupId: this.editGroup.groupId,
-          userId: this.editGroup.userId
-        }
+          groupId: this.editGroup.groupId[1],
+          userId: this.editGroup.userId,
+        };
         console.log(obj);
         this.$http.put('http://' + global.URL + '/v1/user/switch/group', obj).then((res) => {
-          console.log(res)
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message(res.body.data)
             this.resetData();
