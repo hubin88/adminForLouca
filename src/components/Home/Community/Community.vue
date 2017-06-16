@@ -64,7 +64,7 @@
                                 <td>{{item.city}}</td>
                                 <td class="operation">
 <!--                                    <a href="javascript:void(0)">查看</a>-->
-                                    <a href="javascript:void(0)" @click="showEditNow(item.id)"  v-if="hasPrivileges('group_update')">编辑</a>
+                                    <a href="javascript:void(0)" @click="showEditNow(item.id)"  v-if="hasPrivileges('group_edit')">编辑</a>
                                 </td>
                             </tr>
                         </tbody>

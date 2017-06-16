@@ -2,7 +2,7 @@
   <div>
     <el-tabs class="tabs_box" v-model="activeName">
       <el-tab-pane label="角色" name="total">
-        <el-button class="create" type="primary" @click="createRole=true">创建角色</el-button>
+        <el-button class="create" type="primary" @click="createRole=true" v-if="hasPrivileges('role_edit')">创建角色</el-button>
         <table class="total table">
           <tr>
             <th>角色名称</th>
@@ -13,9 +13,9 @@
             <td>{{item.name}}</td>
             <td>{{item.amount}}</td>
             <td class="operation">
-              <a href="javascript:void(0)" @click="showAuthorityList(item.roleId)">查看和编辑角色权限</a>
-              <a href="javascript:void(0)" @click="showRoleList(item.roleId)">查看和编辑用户</a>
-              <a href="javascript:void(0)" @click="delteRole(item.roleId)">删除角色</a>
+              <a href="javascript:void(0)" @click="showAuthorityList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑角色权限</a>
+              <a href="javascript:void(0)" @click="showRoleList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑用户</a>
+              <a href="javascript:void(0)" @click="delteRole(item.roleId)" v-if="hasPrivileges('role_manage')">删除角色</a>
             </td>
           </tr>
         </table>
@@ -78,14 +78,14 @@
             <td>{{item.name}}</td>
             <td>{{item.phone}}</td>
             <td class="operation">
-              <a href="javascript:void(0)" @click="deleteUser(item.userId)">删除用户</a>
+              <a href="javascript:void(0)" @click="deleteUser(item.userId)" v-if="hasPrivileges('permission_manage')">删除用户</a>
             </td>
           </tr>
         </table>
       </el-dialog>
       <!--      权限列表      -->
       <el-tab-pane label="权限" name="权限管理">
-        <el-button class="create" type="primary" @click="addItem(0)">添加父级权限</el-button>
+        <el-button class="create" type="primary" @click="addItem(0)" v-if="hasPrivileges('permission_add')">添加父级权限</el-button>
         <div class="el-tree">
           <div class="el-tree-node" :class="{'is-expanded':item.isShowChildren}"
                v-for="item in authorityList">
@@ -101,11 +101,11 @@
                 </span>
               </label>
               <span class="el-tree-node__label"
-                    @click="item.isShowChildren=!item.isShowChildren">{{item.label}}/{{item.id}}/{{item.symbol}}</span>
-              <el-button size="mini">停用</el-button>
-              <el-button size="mini" @click="deleteItem(item)">删除</el-button>
-              <el-button size="mini" @click="edit(item)">编辑</el-button>
-              <el-button size="mini" @click="addItem(item.id)">添加子权限</el-button>
+                    @click="item.isShowChildren=!item.isShowChildren">{{item.label}}/{{item.symbol}}</span>
+              <el-button size="mini" @click="changeState(item)" v-if="hasPrivileges('permission_manage')">停用</el-button>
+              <el-button size="mini" @click="deleteItem(item)" v-if="hasPrivileges('permission_manage')">删除</el-button>
+              <el-button size="mini" @click="edit(item)" v-if="hasPrivileges('permission_edit')">编辑</el-button>
+              <el-button size="mini" @click="addItem(item.id)" v-if="hasPrivileges('permission_add')">添加子权限</el-button>
             </div>
             <div class="el-tree-node__children">
               <div class="el-tree-node is-expanded" v-for="val in item.children">
@@ -117,10 +117,10 @@
                       <input type="checkbox" class="el-checkbox__original" value="">
                     </span>
                   </label>
-                  <span class="el-tree-node__label">{{val.label}}/{{val.id}}/{{val.symbol}}</span>
-                  <el-button size="mini">停用</el-button>
-                  <el-button size="mini" @click="deleteItem(val)">删除</el-button>
-                  <el-button size="mini" @click="edit(val)">编辑</el-button>
+                  <span class="el-tree-node__label">{{val.label}}/{{val.symbol}}</span>
+                  <el-button size="mini" @click="changeState(val)" v-if="hasPrivileges('permission_manage')">停用</el-button>
+                  <el-button size="mini" @click="deleteItem(val)" v-if="hasPrivileges('permission_manage')">删除</el-button>
+                  <el-button size="mini" @click="edit(val)" v-if="hasPrivileges('permission_edit')">编辑</el-button>
                 </div>
                 <div class="el-tree-node__children"></div>
               </div>
@@ -129,29 +129,6 @@
         </div>
       </el-tab-pane>
     </el-tabs>
-    <!--禁用权限-->
-    <el-dialog
-      title="提示"
-      v-model="stop.isShowShop"
-      size="small"
-    >
-      <span>
-        <el-date-picker
-          v-model="stop.time"
-          type="datetimerange"
-          placeholder="选择被禁起止时间"
-          :picker-options="stop.pickerOptions"></el-date-picker>
-          <el-select v-model="stop.level" clearable placeholder="请选择被禁级别">
-         <el-option label="禁发布" value="1"></el-option>
-         <el-option label="禁发布和发言" value="2"></el-option>
-       </el-select>
-      </span>
-      <el-input type="textarea" v-model="stop.reason" placeholder="请输入被禁原因"></el-input>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="stop.isShowShop=false">取 消</el-button>
-        <el-button type="primary" @click="sureStop">确 定</el-button>
-      </span>
-    </el-dialog>
     <!--给角色添加用户-->
     <el-dialog
       title="请输入手机号码"
@@ -184,8 +161,65 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="createRole=false">取 消</el-button>
+        <el-button @click="cnacelCreate">取 消</el-button>
         <el-button type="primary" @click="sureCreate">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!--添加权限-->
+    <el-dialog
+      title="添加权限"
+      v-model="addAuthority.isShowAdd"
+      size="tiny"
+      @close="resetAddAuthority"
+    >
+      <el-form label-width="100px" :model="addAuthority">
+        <el-form-item label="权限名称">
+          <el-input v-model="addAuthority.name"></el-input>
+        </el-form-item>
+        <el-form-item label="权限描述">
+          <el-input v-model="addAuthority.remark"></el-input>
+        </el-form-item>
+        <el-form-item label="权限英文标识">
+          <el-input v-model="addAuthority.symbol"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="resetAddAuthority">取 消</el-button>
+        <el-button type="primary" @click="sureAddAuthority">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!--权限编辑-->
+    <el-dialog
+      title="权限编辑"
+      v-model="editAuthority.isShowEdit"
+      size="tiny"
+      @close="resetEditAuthority"
+    >
+      <el-form label-width="100px" :model="editAuthority">
+        <el-form-item label="权限名称">
+          <el-input v-model="editAuthority.name"></el-input>
+        </el-form-item>
+        <el-form-item label="权限上级ID">
+          <el-select v-model="editAuthority.parentId" clearable placeholder="请选择权限上级名称">
+            <el-option
+              v-for="item in parentIds"
+              :key="item.id"
+              :label="item.label"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="权限描述">
+          <el-input v-model="editAuthority.remark"></el-input>
+        </el-form-item>
+        <el-form-item label="角色状态">
+          <el-radio class="radio" v-model="editAuthority.state" label="0">禁用</el-radio>
+          <el-radio class="radio" v-model="editAuthority.state" label="1">启用</el-radio>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="resetEditAuthority">取 消</el-button>
+        <el-button type="primary" @click="sureEditAuthority">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -210,45 +244,27 @@
         isCheckedId: [],
         isShowChildren: true,
         authorityList: [],
+        addAuthority: {
+          isShowAdd: false,
+          name: "",
+          symbol: "",
+          remark: "",
+          parentId: 0,
+        },
+        parentIds:[],
+        editAuthority: {
+          isShowEdit: false,
+          name: "",
+          state: "",
+          remark: "",
+          parentId: 0,
+          privilegeId:"",
+        },
         addUser: {
           isShowAdd: false,
           userId: '',
           roleId: '',
           phone: ''
-        },
-        stop: {
-          isShowShop: false,
-          time: [],
-          stopId: '',
-          level: '',
-          reason: '',
-          pickerOptions: {
-            shortcuts: [{
-              text: '最近一周',
-              onClick(picker) {
-                const end = new Date();
-                const start = new Date();
-                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-                picker.$emit('pick', [start, end]);
-              }
-            }, {
-              text: '最近一个月',
-              onClick(picker) {
-                const end = new Date();
-                const start = new Date();
-                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-                picker.$emit('pick', [start, end]);
-              }
-            }, {
-              text: '最近三个月',
-              onClick(picker) {
-                const end = new Date();
-                const start = new Date();
-                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-                picker.$emit('pick', [start, end]);
-              }
-            }]
-          }
         },
         newRole: {
           name: '',
@@ -273,6 +289,7 @@
                 id: item.privilegeId,
                 label: item.name,
                 symbol: item.symbol,
+                remark:item.remark,
                 parentId: item.parentId,
                 isCheck: false,
                 children: [],
@@ -290,6 +307,7 @@
                     id: item.privilegeId,
                     label: item.name,
                     symbol: item.symbol,
+                    remark:item.remark,
                     parentId: item.parentId,
                     isCheck: false,
                   });
@@ -425,6 +443,12 @@
           }
         });
       },
+      cnacelCreate(){
+        this.createRole = false;
+        this.newRole.name = "";
+        this.newRole.symbol = "";
+        this.newRole.description = "";
+      },
       sureCreate(){
         let obj = {
           name: this.newRole.name,
@@ -463,28 +487,6 @@
         var eStr = eYear + '-' + eMonth + '-' + eDay + ' ' + eHours + ':' + eMinutes + ':' + eSeconds;
         return eStr;
       },
-      sureStop(){
-        let obj = {
-          handler: this.userId,
-          userId: this.stop.stopId
-        };
-        const time = this.stop.time;
-        if (time[0]) {
-          Object.assign(obj, { startLockTime: this.formatTime(time[0]) });
-        }
-        if (time[1]) {
-          Object.assign(obj, { endLockTime: this.formatTime(time[1]) });
-        }
-        if (this.stop.level) {
-          Object.assign(obj, { level: this.stop.level });
-        }
-        if (this.stop.reason) {
-          Object.assign(obj, { reason: this.stop.reason });
-        }
-        this.$http.post('http://' + global.URL + '/v1/user/locked', obj).then((res) => {
-          console.log(res);
-        });
-      },
       stopAuthority(id){
         this.stop.isShowShop = true;
         this.stop.time = [];
@@ -492,85 +494,92 @@
         this.stop.reason = '';
         this.stop.stopId = id;
       },
-      edit(item){
-        this.$prompt('请依次输入权限名称、上级id、权限描述和角色状态(0禁用，1启用),用","隔开', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-        }).then(({ value }) => {
-          const val = value.replace(/[,，]/g, ',').split(',');
-          let obj = {
-            "name": val[0] || item.label,
-            "privilegeId": item.id,
-            "parentId": parseInt(val[1]) || item.parentId,
-          };
-          if (!!val[2]) {
-            Object.assign(obj, { remark: val[1] })
-          }
-          if (!!val[3]) {
-            Object.assign(obj, { state: val[2] })
-          }
-          const flag = this.authorityList.some(val => val.id === obj.parentId);
-          if (!flag && obj.parentId !== 0) {
-            this.$message({
-              type: 'info',
-              message: '父级id不正确'
-            });
-            return false;
-          }
-          this.$http.put('http://' + global.URL + '/v1/permission', obj).then((res) => {
-            if (res.body.code == 200 || res.body.code == 201) {
-              this.authorityList = [];
-              this.$http.get('http://' + global.URL + '/v1/permission/list').then((res) => {
-                if (res.body.code == 200) {
-                  this.$message({
-                    type: 'success',
-                    message: '更新成功'
-                  });
-                  this.$http.get('http://' + global.URL + '/v1/permission/list').then((res) => {
-                    if (res.body.code == 200) {
-                      const arr = res.body.list || [];
-                      arr.forEach(item => {
-                        if (item.parentId === 0) {
-                          this.authorityList.push({
-                            id: item.privilegeId,
-                            label: item.name,
-                            symbol: item.symbol,
-                            parentId: item.parentId,
-                            isCheck: false,
-                            children: [],
-                            isShowChildren: false,
-                            hasChildren: false,
-                          });
-                        }
-                      });
-                      arr.forEach(item => {
-                        if (item.parentId > 0) {
-                          this.authorityList.forEach(val => {
-                            if (val.id === item.parentId) {
-                              Object.assign(val, { isShowChildren: false, hasChildren: true });
-                              val.children.push({
-                                id: item.privilegeId,
-                                label: item.name,
-                                symbol: item.symbol,
-                                parentId: item.parentId,
-                                isCheck: false,
-                              });
-                            }
-                          });
-                        }
-                      });
-                    }
-                  });
-                }
-              });
-            }
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '取消添加'
-          });
+      resetEditAuthority(){
+        Object.assign(this.editAuthority, {
+          isShowEdit: false,
+          name: "",
+          state: "",
+          remark: "",
+          parentId: 0,
+          privilegeId:"",
         });
+      },
+      sureEditAuthority(){
+        let obj = {
+          name: this.editAuthority.name,
+          privilegeId: this.editAuthority.privilegeId,
+          parentId: parseInt(this.editAuthority.parentId),
+        };
+        if (this.editAuthority.remark) {
+          Object.assign(obj, { remark: this.editAuthority.remark })
+        }
+        if (this.editAuthority.state!=="") {
+          Object.assign(obj, { state: this.editAuthority.state })
+        }
+        this.$http.put('http://' + global.URL + '/v1/permission', obj).then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            this.authorityList = [];
+            this.$http.get('http://' + global.URL + '/v1/permission/list').then((res) => {
+              if (res.body.code == 200) {
+                this.$message({
+                  type: 'success',
+                  message: '更新成功'
+                });
+                this.resetEditAuthority();
+                this.$http.get('http://' + global.URL + '/v1/permission/list').then((res) => {
+                  if (res.body.code == 200) {
+                    const arr = res.body.list || [];
+                    arr.forEach(item => {
+                      if (item.parentId === 0) {
+                        this.authorityList.push({
+                          id: item.privilegeId,
+                          label: item.name,
+                          symbol: item.symbol,
+                          remark:item.remark,
+                          parentId: item.parentId,
+                          isCheck: false,
+                          children: [],
+                          isShowChildren: false,
+                          hasChildren: false,
+                        });
+                      }
+                    });
+                    arr.forEach(item => {
+                      if (item.parentId > 0) {
+                        this.authorityList.forEach(val => {
+                          if (val.id === item.parentId) {
+                            Object.assign(val, { isShowChildren: false, hasChildren: true });
+                            val.children.push({
+                              id: item.privilegeId,
+                              label: item.name,
+                              symbol: item.symbol,
+                              remark:item.remark,
+                              parentId: item.parentId,
+                              isCheck: false,
+                            });
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        })
+      },
+      edit(item){
+        this.parentIds= this.authorityList.filter(val => val.parentId ===0);
+        Object.assign(this.editAuthority, {
+          isShowEdit: true,
+          name: item.label,
+          remark: item.remark,
+          parentId: item.parentId,
+          privilegeId:item.id,
+        });
+      },
+      changeState(item){
+
       },
       deleteItem(item){
         this.$confirm('确定删除吗?', '提示', {
@@ -604,59 +613,66 @@
         });
 
       },
-      addItem(id){
-        this.$prompt('请依次输入权限名称、角色英文标识(只允许小写字母与下划线),权限描述,用","隔开', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-        }).then(({ value }) => {
-          const val = value.replace(/[,，]/g, ',').split(',');
-          const obj = {
-            "name": val[0],
-            "remark": val[2] || "",
-            "symbol": val[1],
-            "parentId": id,
-            "userId": this.userId,
-          };
-          this.$http.post('http://' + global.URL + '/v1/permission', obj).then((res) => {
-            if (res.body.code == 200 || res.body.code == 201) {
-              const id = res.body.data;
-              if (obj.parentId === 0) {
-                this.authorityList.push({
-                  id,
-                  label: obj.name,
-                  symbol: obj.symbol,
-                  parentId: 0,
-                  isCheck: false,
-                  children: [],
-                  isShowChildren: false,
-                  hasChildren: false,
-                });
-              } else {
-                this.authorityList.forEach(item => {
-                  if (item.id === obj.parentId) {
-                    Object.assign(item, { isShowChildren: false, hasChildren: true });
-                    item.children.push({
-                      id,
-                      label: obj.name,
-                      symbol: obj.symbol,
-                      parentId: obj.parentId,
-                      isCheck: false,
-                    });
-                  }
-                });
-              }
-              this.$message({
-                type: 'success',
-                message: '添加成功'
+      resetAddAuthority(){
+        Object.assign(this.addAuthority, {
+          isShowAdd: false,
+          name: "",
+          symbol: "",
+          remark: "",
+          parentId: 0,
+        });
+      },
+      sureAddAuthority(){
+        const obj = {
+          name: this.addAuthority.name,
+          symbol: this.addAuthority.symbol,
+          parentId: this.addAuthority.parentId,
+          userId: this.userId,
+        };
+        if (this.addAuthority.remark) {
+          Object.assign(obj, { remark: this.addAuthority.remark });
+        }
+        this.$http.post('http://' + global.URL + '/v1/permission', obj).then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            const id = res.body.data;
+            if (obj.parentId === 0) {
+              this.authorityList.push({
+                id,
+                label: obj.name,
+                symbol: obj.symbol,
+                remark: obj.remark,
+                parentId: 0,
+                isCheck: false,
+                children: [],
+                isShowChildren: false,
+                hasChildren: false,
+              });
+            } else {
+              this.authorityList.forEach(item => {
+                if (item.id === obj.parentId) {
+                  Object.assign(item, { isShowChildren: false, hasChildren: true });
+                  item.children.push({
+                    id,
+                    label: obj.name,
+                    symbol: obj.symbol,
+                    remark: obj.remark,
+                    parentId: obj.parentId,
+                    isCheck: false,
+                  });
+                }
               });
             }
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '取消添加'
-          });
-        });
+            this.resetAddAuthority();
+            this.$message({
+              type: 'success',
+              message: '添加成功'
+            });
+          }
+        })
+      },
+      addItem(id){
+        this.addAuthority.parentId = id;
+        this.addAuthority.isShowAdd = true;
       },
       checkAllRoleAuthority(item){
         item.isCheck = !item.isCheck;
@@ -718,7 +734,6 @@
               message: '编辑成功'
             });
           }
-//          this.$emit("change-privileges",privilegesArr);
         });
       },
       closeUsersList(){
@@ -775,7 +790,6 @@
         });
       },
     },
-    components: {}
   }
 </script>
 

@@ -415,14 +415,14 @@
                               <router-link :to="{name:'comments'}" href="javascript:void(0)"><li class="list"><span>评论管理</span></li></router-link>
           -->
           <router-link :to="{name:'assess'}" href="javascript:void(0)">
-            <li class="list" v-if="hasPrivileges('comment_view')"><span>评价管理</span></li>
+            <li class="list" v-if="hasPrivileges('comment_view')"><span>评论管理</span></li>
           </router-link>
           <router-link :to="{name:'floorshow'}" href="javascript:void(0)">
-            <li class="list"><span>楼咖秀</span></li>
+            <li class="list" v-if="hasPrivileges('showtime_view')"><span>楼咖秀</span></li>
           </router-link>
           <!--                    <router-link :to="{name:'checkstreet'}" href="javascript:void(0)"><li class="list"><span>查令街</span></li></router-link>-->
           <router-link :to="{name:'gathering'}" href="javascript:void(0)">
-            <li class="list" v-if="hasPrivileges('party_view')"><span>聚会</span></li>
+            <li class="list" v-if="hasPrivileges('partying_view')"><span>聚会</span></li>
           </router-link>
           <router-link :to="{name:'loucabeen'}" href="javascript:void(0)">
             <li class="list" v-if="hasPrivileges('been_view')"><span>咖豆管理</span></li>
@@ -464,7 +464,7 @@
             <li class="list" v-if="hasPrivileges('group_view')"><span>社区管理</span></li>
           </router-link>
           <router-link :to="{name:'tradingarea'}" href="javascript:void(0)">
-            <li class="list" v-if="hasPrivileges('trading_view')"><span>商圈管理</span></li>
+            <li class="list" v-if="hasPrivileges('circle_view')"><span>商圈管理</span></li>
           </router-link>
         </ul>
 
@@ -480,13 +480,13 @@
         </li>
         <ul class="second_nav">
           <router-link :to="{name:'advertisement'}" href="javascript:void(0)">
-            <li class="list" v-if="hasPrivileges('advert_view')"><span>广告管理</span></li>
+            <li class="list" v-if="hasPrivileges('place_view')"><span>广告管理</span></li>
           </router-link>
           <router-link :to="{name:'label'}" href="javascript:void(0)">
             <li class="list" v-if="hasPrivileges('tag_view')"><span>标签管理</span></li>
           </router-link>
           <router-link :to="{name:'authority'}" href="javascript:void(0)">
-            <li class="list"><span>角色&权限</span></li>
+            <li class="list" v-if="hasPrivileges('permission_view')"><span>角色&权限</span></li>
           </router-link>
           <!--
                               <router-link :to="{name:'trade'}" href="javascript:void(0)"><li class="list"><span>行业管理</span></li></router-link>

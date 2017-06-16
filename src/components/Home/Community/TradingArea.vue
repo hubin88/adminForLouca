@@ -18,8 +18,8 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" @click="deleteArea(checked)" v-if="hasPrivileges('trading_delete')">删除</el-button>
-                    <el-button style="float:right" @click="showCreate=true" v-if="hasPrivileges('trading_add')">新建商圈</el-button>
+                    <el-button type="primary" @click="deleteArea(checked)" v-if="hasPrivileges('circle_manage')">删除</el-button>
+                    <el-button style="float:right" @click="showCreate=true" v-if="hasPrivileges('circle_add')">新建商圈</el-button>
                 </div>
 
                 <!--    列表    -->
@@ -51,8 +51,8 @@
                                 <td>{{item.community.total}}</td>
                                 <td>{{item.city}}</td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="showEditNow(item.id)" v-if="hasPrivileges('trading_update')">编辑</a>
-                                    <a href="javascript:void(0)" @click="deleteArea(item.id)" v-if="hasPrivileges('trading_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="showEditNow(item.id)" v-if="hasPrivileges('circle_edit')">编辑</a>
+                                    <a href="javascript:void(0)" @click="deleteArea(item.id)" v-if="hasPrivileges('circle_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>

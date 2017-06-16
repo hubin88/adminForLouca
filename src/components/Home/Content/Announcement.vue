@@ -15,7 +15,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="danger" @click="changeState(checked,'7')" v-if="hasPrivileges('announce_delete')">删除</el-button>
+                    <el-button type="danger" @click="changeState(checked,'7')" v-if="hasPrivileges('announce_manage')">删除</el-button>
                     <el-button type="primary" @click="changeState(checked,'1')" v-if="hasPrivileges('announce_manage')">上线</el-button>
                     <el-button type="primary" @click="changeState(checked,'0')" v-if="hasPrivileges('announce_manage')">下线</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
@@ -56,10 +56,10 @@
                                 <td>{{item.overdueTime}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)" @click="showDetailNow(item.id)">查看</a>
-                                    <a href="javascript:void(0)" @click="showEditNow(item.id)" v-if="hasPrivileges('announce_manage')">编辑</a>
+                                    <a href="javascript:void(0)" @click="showEditNow(item.id)" v-if="hasPrivileges('announce_edit')">编辑</a>
                                     <a href="javascript:void(0)" @click="changeState(item.id,'0')" v-if="hasPrivileges('announce_manage')">下线</a>
                                     <a href="javascript:void(0)" @click="changeState(item.id,'1')" v-if="hasPrivileges('announce_manage')">上线</a>
-                                    <a href="javascript:void(0)" @click="changeState(item.id,'7')" v-if="hasPrivileges('announce_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="changeState(item.id,'7')" v-if="hasPrivileges('announce_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>

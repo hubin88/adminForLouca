@@ -33,7 +33,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" v-if="hasPrivileges('comment_delete')">删除</el-button>
+                    <el-button type="primary" v-if="hasPrivileges('comment_manage')">删除</el-button>
                 </div>
 
                 <!--    列表    -->
@@ -64,7 +64,7 @@
                                 <td>{{item.type}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)">查看</a>
-                                    <a href="javascript:void(0)" v-if="hasPrivileges('comment_delete')">删除</a>
+                                    <a href="javascript:void(0)" v-if="hasPrivileges('comment_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>

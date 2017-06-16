@@ -165,49 +165,54 @@
       <el-row>
         <el-col :span="8">
           <div>
-            <el-input
-              placeholder="选择城市"
-              icon="search"
-              v-model="selectKey.chosedCity.label"
-              :on-icon-click="searchTrading">
-            </el-input>
-            <br>
-            <div class="select-content">
-              <div v-for="item in selectKey.city"
-                   @click="choseCity(item.value)" class="city">{{item.label}}
-              </div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div>
-            <el-input
-              placeholder="选择商圈"
-              icon="search"
-              v-model="selectKey.chosedTrading.label"
-              :on-icon-click="searchCommunity">
-            </el-input>
-            <br>
-            <div class="select-content">
-              <div v-for="item in selectKey.trading" @click="choseTrading(item.value)"
-                   class="trading">
-                {{item.label}}
-              </div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div>
-            <el-checkbox :indeterminate="selectKey.isIndeterminate" v-model="selectKey.checkAll"
-                         @change="checkAllCommunity">全选
+            <!--<el-input-->
+              <!--placeholder="选择城市"-->
+              <!--icon="search"-->
+              <!--v-model="selectKey.chosedCity.label"-->
+              <!--:on-icon-click="searchTrading">-->
+            <!--</el-input>-->
+            <!--<br>-->
+            <!--<div class="select-content">-->
+              <!--<div v-for="item in selectKey.city"-->
+                   <!--@click="choseCity(item.value)" class="city">{{item.label}}-->
+              <!--</div>-->
+            <!--</div>-->
+            <el-checkbox :indeterminate="selectKey.city.isIndeterminate" v-model="selectKey.city.checkAll"
+                         @change="">全选
             </el-checkbox>
             <br>
-            <el-checkbox-group v-model="form.checkedCommunity" @change="checkedCommunityChange">
-              <el-checkbox v-for="item in selectKey.communityName" :label="item"
+            <el-checkbox-group v-model="selectKey.city.checkedCity" @change="">
+              <el-checkbox v-for="item in selectKey.city.cityName" :label="item"
                            :key="item">{{item}}
               </el-checkbox>
             </el-checkbox-group>
           </div>
+        </el-col>
+        <el-col :span="8">
+          <div>
+            <el-checkbox :indeterminate="selectKey.trading.isIndeterminate" v-model="selectKey.trading.checkAll"
+                         @change="">全选
+            </el-checkbox>
+            <br>
+            <el-checkbox-group v-model="selectKey.trading.checkedCity" @change="changeCity">
+              <el-checkbox v-for="item in selectKey.trading.tradingName" :label="item"
+                           :key="item">{{item}}
+              </el-checkbox>
+            </el-checkbox-group>
+          </div>
+        </el-col>
+        <el-col :span="8">
+          <!--<div>-->
+            <!--<el-checkbox :indeterminate="selectKey.community.isIndeterminate" v-model="selectKey.community.checkAll"-->
+                         <!--@change="checkAllCommunity">全选-->
+            <!--</el-checkbox>-->
+            <!--<br>-->
+            <!--<el-checkbox-group v-model="form.checkedCommunity" @change="checkedCommunityChange">-->
+              <!--<el-checkbox v-for="item in selectKey.communityName" :label="item"-->
+                           <!--:key="item">{{item}}-->
+              <!--</el-checkbox>-->
+            <!--</el-checkbox-group>-->
+          <!--</div>-->
         </el-col>
       </el-row>
       <span slot="footer" class="dialog-footer">
@@ -255,23 +260,26 @@
         addLabel: "",
         sendPeopleNum: 1000,
         selectKey: {
-          city: [{
-            label: "深圳",
-            value: 0,
-          }],
-          chosedCity: {
-            label: "深圳",
-            value: 0,
+          city:{
+            checkedCity:[],
+            cityName:["深圳"],
+            checkAll: true,
+            isIndeterminate: true,
           },
-          trading: [],
-          chosedTrading: {
-            label: "",
-            value: "",
+          trading:{
+            options:[],
+            checkedTrading:[],
+            tradingName:[],
+            checkAll: true,
+            isIndeterminate: true,
           },
-          community: [],
-          communityName: [],
-          checkAll: true,
-          isIndeterminate: true,
+          community: {
+            options:[],
+            checkedCommunity:[],
+            communityName:[],
+            checkAll: true,
+            isIndeterminate: true,
+          },
         },
         label: {
           labelName: [],
@@ -325,7 +333,7 @@
           pageSizes: [10, 20, 50, 100, 200, 500, 1000],
           pageSize: 10,
           currentPage: 1,
-          total: 1,
+          total: 100,
         },
       }
     },
@@ -362,8 +370,11 @@
         this.edit.type="post";
         this.resetForm();
       },
-      choseCity(val){
-        this.selectKey.chosedCity = this.selectKey.city.filter(item => item.value === val).pop();
+      changeCity(value){
+        const checkedCount = value.length;
+        this.selectKey.city.checkAll=checkedCount === this.selectKey.city.cityName.length;
+        this.selectKey.city.isIndeterminate = checkedCount > 0 && checkedCount < this.selectKey.city.cityName.length;
+        this.selectKey.city.checkedCity = value;
       },
       searchTrading(){
         this.$http.get('http://' + global.URL + '/v1/region?page=1&limit=999').then((res) => {
@@ -404,7 +415,7 @@
         this.selectKey.isIndeterminate = false;
       },
       checkedCommunityChange(value){
-        let checkedCount = value.length;
+        const checkedCount = value.length;
         this.selectKey.checkAll = checkedCount === this.selectKey.communityName.length;
         this.selectKey.isIndeterminate = checkedCount > 0 && checkedCount < this.selectKey.communityName.length;
         this.form.checkedCommunity = value;
@@ -713,7 +724,7 @@
   .remainNum {
     position: absolute;
     bottom: 0;
-    left: 550px;
+    left: 540px;
   }
 
   .table_handle {

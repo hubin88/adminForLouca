@@ -18,7 +18,7 @@
         </div>
 
         <div class="table_handle">
-          <el-button type="danger" @click="deleteservice(checked)" v-if="hasPrivileges('service_delete')">删除</el-button>
+          <el-button type="danger" @click="deleteservice(checked)" v-if="hasPrivileges('service_manage')">删除</el-button>
           <el-button style="visibility:hidden">占位</el-button>
           <el-button type="success" style="float:right" @click="exportExcel('service')">导出表格
           </el-button>
@@ -65,7 +65,7 @@
               <td>{{item.createdTime}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showservice(item.serviceId)">查看</a>
-                <a href="javascript:void(0)" @click="deleteservice(item.serviceId)" v-if="hasPrivileges('service_delete')">删除</a>
+                <a href="javascript:void(0)" @click="deleteservice(item.serviceId)" v-if="hasPrivileges('service_manage')">删除</a>
               </td>
             </tr>
             </tbody>

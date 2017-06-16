@@ -1,2 +1,2 @@
-global.TEST = true;
+global.TEST = false;
 global.URL = global.TEST ? 'admin.api.hboffice.cn' : 'admin.api.louka.net.cn';

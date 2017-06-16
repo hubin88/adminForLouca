@@ -67,7 +67,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" @click="deleteLabel(commonDL.checked,'普通动态')" v-if="hasPrivileges('tag_delete')">删除</el-button>
+                    <el-button type="primary" @click="deleteLabel(commonDL.checked,'普通动态')" v-if="hasPrivileges('tag_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('commonNews')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="showCreateNow('3')" v-if="hasPrivileges('tag_add')">新建普通动态标签</el-button>
@@ -100,8 +100,8 @@
                                 <td>{{item.news}}</td>
                                 <td>{{item.sort}}</td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="showSortNow(item.id,'普通动态')" v-if="hasPrivileges('tag_update')">排序</a>
-                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'普通动态')" v-if="hasPrivileges('tag_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="showSortNow(item.id,'普通动态')" v-if="hasPrivileges('tag_manage')">排序</a>
+                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'普通动态')" v-if="hasPrivileges('tag_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -130,7 +130,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" v-if="hasPrivileges('tag_delete')">删除</el-button>
+                    <el-button type="primary" v-if="hasPrivileges('tag_manage')">删除</el-button>
                     <el-button type="" style="float:right" v-if="hasPrivileges('tag_add')">新建推荐动态标签</el-button>
                 </div>
 
@@ -164,8 +164,8 @@
                                 <td>{{item.sort}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)">简介</a>
-                                    <a href="javascript:void(0)" v-if="hasPrivileges('tag_update')">排序</a>
-                                    <a href="javascript:void(0)" v-if="hasPrivileges('tag_delete')">删除</a>
+                                    <a href="javascript:void(0)" v-if="hasPrivileges('tag_manage')">排序</a>
+                                    <a href="javascript:void(0)" v-if="hasPrivileges('tag_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -196,7 +196,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" @click="deleteLabel(skillLabel.checked,'技能标签')" v-if="hasPrivileges('tag_delete')">删除</el-button>
+                    <el-button type="primary" @click="deleteLabel(skillLabel.checked,'技能标签')" v-if="hasPrivileges('tag_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('skill')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="showCreateNow('2')" v-if="hasPrivileges('tag_add')">新建技能标签</el-button>
@@ -256,7 +256,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" @click="deleteLabel(interestLabel.checked,'兴趣标签')"  v-if="hasPrivileges('tag_delete')">删除</el-button>
+                    <el-button type="primary" @click="deleteLabel(interestLabel.checked,'兴趣标签')"  v-if="hasPrivileges('tag_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('interest')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="showCreateNow('1')"  v-if="hasPrivileges('tag_add')">新建兴趣标签</el-button>
@@ -287,7 +287,7 @@
                                 <td>{{item.name}}</td>
                                 <td>{{item.members}}</td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'兴趣标签')"  v-if="hasPrivileges('tag_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'兴趣标签')"  v-if="hasPrivileges('tag_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -316,7 +316,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="primary" @click="deleteLabel(partyLabel.checked,'聚会标签')"  v-if="hasPrivileges('tag_delete')">删除</el-button>
+                    <el-button type="primary" @click="deleteLabel(partyLabel.checked,'聚会标签')"  v-if="hasPrivileges('tag_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('party')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="showCreateNow('4')"  v-if="hasPrivileges('tag_add')">新建聚会标签</el-button>
@@ -363,9 +363,9 @@
                                     </el-tag>
                                 </td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="showSortNow(item.id,'聚会标签')"  v-if="hasPrivileges('tag_update')">排序</a>
-                                    <a href="javascript:void(0)" @click="showAddSloganNow(item.id)"  v-if="hasPrivileges('tag_update')">添加口号</a>
-                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'聚会标签')"  v-if="hasPrivileges('tag_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="showSortNow(item.id,'聚会标签')"  v-if="hasPrivileges('tag_manage')">排序</a>
+                                    <a href="javascript:void(0)" @click="showAddSloganNow(item.id)"  v-if="hasPrivileges('tag_manage')">添加口号</a>
+                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'聚会标签')"  v-if="hasPrivileges('tag_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -408,7 +408,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="danger" @click="deleteLabel(serviceLabel.checked,'服务标签')"  v-if="hasPrivileges('tag_delete')">删除</el-button>
+                    <el-button type="danger" @click="deleteLabel(serviceLabel.checked,'服务标签')"  v-if="hasPrivileges('tag_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('interest')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="showCreateNow('5')"  v-if="hasPrivileges('tag_add')">新建服务标签</el-button>
@@ -442,7 +442,7 @@
                                 <td>{{item.contain}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)" @click="showChildrenNow(item.id)">查看</a>
-                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'服务标签')" v-if="hasPrivileges('tag_delete')">删除</a>
+                                    <a href="javascript:void(0)" @click="deleteLabel(item.id,'服务标签')" v-if="hasPrivileges('tag_manage')">删除</a>
 <!--                                    <a href="javascript:void(0)" @click="editLabel(item.id)">编辑</a>-->
                                 </td>
                             </tr>
@@ -468,7 +468,7 @@
 					<el-table-column property="name" label="名称" width="200"></el-table-column>
 					<el-table-column property="" label="操作">
 						<template scope="scope">
-							<a href="javascript:void(0)" style="color:#20A0FF" @click="deleteLabel(children[scope.$index].tagId,'服务子标签')" v-if="hasPrivileges('tag_delete')">删除</a>
+							<a href="javascript:void(0)" style="color:#20A0FF" @click="deleteLabel(children[scope.$index].tagId,'服务子标签')" v-if="hasPrivileges('tag_manage')">删除</a>
 						</template>
 					</el-table-column>
 				  </el-table>

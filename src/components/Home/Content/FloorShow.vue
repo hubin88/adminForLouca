@@ -60,7 +60,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="danger" @click="deleteShow(checked)">删除</el-button>
+                    <el-button type="danger" @click="deleteShow(checked)" v-if="hasPrivileges('showtime_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('show')">导出表格</el-button>
                 </div>
@@ -99,7 +99,7 @@
                                 <td>{{item.publishTime}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)" @click="showDetailNow(item.id)">查看</a>
-                                    <a href="javascript:void(0)" @click="deleteShow(item.id)">删除</a>
+                                    <a href="javascript:void(0)" @click="deleteShow(item.id)" v-if="hasPrivileges('showtime_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -183,11 +183,11 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="danger" @click="changeThemeState(themes.checked,7)">删除</el-button>
-                    <el-button type="primary" @click="changeThemeState(themes.checked,0)">结束</el-button>
+                    <el-button type="danger" @click="changeThemeState(themes.checked,7)" v-if="hasPrivileges('showtime_manage')">删除</el-button>
+                    <el-button type="primary" @click="changeThemeState(themes.checked,0)" v-if="hasPrivileges('showtime_manage')">结束</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('themes')">导出表格</el-button>
-                    <el-button type="" style="float:right" @click="showCreate">创建主题</el-button>
+                    <el-button type="" style="float:right" @click="showCreate" v-if="hasPrivileges('showtime_add')">创建主题</el-button>
                 </div>
               <delete v-if="themes.showDelete" :checked="themes.checked" :cancel="cancelDeleteThemes" :confirm="confirmDeleteThemes"></delete>
 
@@ -269,9 +269,9 @@
                                 <td>{{item.sort}}</td>
                                 <td>{{item.time}}</td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="changeThemeState(item.id,7)">删除</a>
+                                    <a href="javascript:void(0)" @click="changeThemeState(item.id,7)" v-if="hasPrivileges('showtime_manage')">删除</a>
 <!--                                    <a href="javascript:void(0)">编辑</a>-->
-                                    <a href="javascript:void(0)" @click="changeThemeState(item.id,0)">结束</a>
+                                    <a href="javascript:void(0)" @click="changeThemeState(item.id,0)" v-if="hasPrivileges('showtime_manage')">结束</a>
                                 </td>
                             </tr>
                         </tbody>

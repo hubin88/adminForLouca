@@ -81,7 +81,7 @@
 
         <!--       操作区         -->
         <div class="table_handle">
-          <el-button type="danger" v-show="hasPrivileges('user_edit')" @click="deleteNews(checked)" v-if="hasPrivileges('newsletter_delete')">
+          <el-button type="danger" @click="deleteNews(checked)" v-if="hasPrivileges('newsletter_manage')">
             删除
           </el-button>
 
@@ -413,7 +413,7 @@
                 <!--                                    <a href="javascript:void(0)" @click="showChangeLabelNow(item.id)">标签</a>-->
                 <a href="javascript:void(0)"
                    @click="showRecommend=true;recommend.singlo=item.id" v-if="hasPrivileges('newsletter_manage')">推荐</a>
-                <a href="javascript:void(0)" @click="deleteNews(item.id)" v-if="hasPrivileges('newsletter_delete')">删除</a>
+                <a href="javascript:void(0)" @click="deleteNews(item.id)" v-if="hasPrivileges('newsletter_manage')">删除</a>
                 <a href="javascript:void(0)" @click="interact(item.id,item.issuer.userId)" v-if="hasPrivileges('newsletter_manage')">互动</a>
               </td>
             </tr>

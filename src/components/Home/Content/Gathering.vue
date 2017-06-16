@@ -66,7 +66,7 @@
         </div>
 
         <div class="table_handle">
-          <el-button type="danger" @click="deleteParty(checked)" v-if="hasPrivileges('party_delete')">删除</el-button>
+          <el-button type="danger" @click="deleteParty(checked)" v-if="hasPrivileges('partying_manage')">删除</el-button>
           <el-button style="visibility:hidden">占位</el-button>
           <el-button type="success" style="float:right" @click="exportExcel('party')">导出表格
           </el-button>
@@ -111,7 +111,8 @@
               <td>{{item.applicant.num}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showParty(item.id)">查看</a>
-                <a href="javascript:void(0)" @click="deleteParty(item.id)" v-if="hasPrivileges('party_delete')">删除</a>
+                <a href="javascript:void(0)" @click="deleteParty(item.id)" v-if="hasPrivileges('partying_manage')">删除</a>
+                <a href="javascript:void(0)" @click="setTop(item.id)">置顶</a>
               </td>
             </tr>
             </tbody>
@@ -222,8 +223,8 @@
         </el-dialog>
 
         <div class="table_handle">
-          <el-button type="primary" @click="deletePartyType(partyType.checked)" v-if="hasPrivileges('party_delete')">删除</el-button>
-          <el-button type="" @click="createTypeShow = true" style="float:right" v-if="hasPrivileges('party_add')">新建聚会类型</el-button>
+          <el-button type="primary" @click="deletePartyType(partyType.checked)" v-if="hasPrivileges('partying_manage')">删除</el-button>
+          <el-button type="" @click="createTypeShow = true" style="float:right" v-if="hasPrivileges('partying_add')">新建聚会类型</el-button>
         </div>
         <delete v-if="partyType.showDelete" :checked="partyType.checked" :cancel="cancelDeleteType"
                 :confirm="confirmDelete"></delete>
@@ -257,8 +258,8 @@
               <td>{{ item.num }}</td>
               <td>{{ item.range }}</td>
               <td class="operation">
-                <a href="javascript:void(0)" @click="sortParty(item.id)" v-if="hasPrivileges('party_manage')">排序</a>
-                <a href="javascript:void(0)" @click="deletePartyType(item.id)" v-if="hasPrivileges('party_delete')">删除</a>
+                <a href="javascript:void(0)" @click="sortParty(item.id)" v-if="hasPrivileges('partying_manage')">排序</a>
+                <a href="javascript:void(0)" @click="deletePartyType(item.id)" v-if="hasPrivileges('partying_manage')">删除</a>
               </td>
             </tr>
             </tbody>
@@ -455,6 +456,9 @@
       })()
     },
     methods: {
+      setTop(id){
+        console.log(id);
+      },
       remoteMethod(name){
         this.partySelectScope.organisers=[];
         if(name!==''){
