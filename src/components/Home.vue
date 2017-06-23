@@ -363,7 +363,7 @@
         </li>
         <ul class="second_nav">
           <router-link :to="{name:'statistics'}" href="javascript:void(0)">
-            <li class="list"><span>统计</span></li>
+            <li class="list" v-if="hasPrivileges('report_summary')"><span>统计</span></li>
           </router-link>
           <!--
                               <router-link :to="{name:'administration'}" href="javascript:void(0)"><li class="list"><span>管理面板</span></li></router-link>
@@ -480,7 +480,7 @@
         </li>
         <ul class="second_nav">
           <router-link :to="{name:'advertisement'}" href="javascript:void(0)">
-            <li class="list" v-if="hasPrivileges('place_view')"><span>广告管理</span></li>
+            <li class="list" v-if="hasPrivileges('plan_view')"><span>广告管理</span></li>
           </router-link>
           <router-link :to="{name:'label'}" href="javascript:void(0)">
             <li class="list" v-if="hasPrivileges('tag_view')"><span>标签管理</span></li>
@@ -527,7 +527,7 @@
             <!--<li class="list"><span>新建群发</span></li>-->
           <!--</router-link>-->
           <router-link :to="{name:'allMessage'}" href="javascript:void(0)">
-            <li class="list"><span>全部消息</span></li>
+            <li class="list" v-if="hasPrivileges('message_view')"><span>全部消息</span></li>
           </router-link>
         </ul>
 

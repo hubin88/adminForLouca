@@ -1251,21 +1251,21 @@
         var sender = userObj.userId;
         var o = {
           "content": this.issue.content,
-          "groupId": this.addIssueOptions.groupId.pop(),
+          "groupId": this.addIssueOptions.groupId[1],
           "photo": this.issue.img,
           "sign": "0",
           "tag": this.issue.label,
           "userId": this.issue.issuer
         }
-        console.log(o)
         this.$http.post('http://' + global.URL + '/v1/newsletter', o).then((res) => {
-          console.log(res);
           if (res.body.code == 200) {
             this.$message('发布成功');
+            this.issueVisible = false;
             this.resetData();
+          }else{
+            this.$message(res.body.message);
           }
         })
-        this.issueVisible = false;
       },
       editNews(){
         var o = {

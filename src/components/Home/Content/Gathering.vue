@@ -13,7 +13,8 @@
                                   </el-option>
                               </el-select>
           -->
-          <el-select v-model="partySelectKey.type" clearable placeholder="请选择聚会类型" class="organiser">
+          <el-select v-model="partySelectKey.type" clearable placeholder="请选择聚会类型"
+                     class="organiser">
             <el-option
               v-for="item in partySelectType"
               :label="item.label"
@@ -21,7 +22,7 @@
             </el-option>
           </el-select>
           <!--<el-input class="organiser" v-model="partySelectKey.type"-->
-                    <!--placeholder="请输入聚会类型 id"></el-input>-->
+          <!--placeholder="请输入聚会类型 id"></el-input>-->
           <el-select v-model="partySelectKey.cost" clearable placeholder="费用类型">
             <el-option
               v-for="item in partySelectScope.cost"
@@ -61,16 +62,36 @@
             </el-option>
           </el-select>
           <!--<el-input class="organiser" v-model="partySelectKey.organiser"-->
-                    <!--placeholder="发起人 id"></el-input>-->
+          <!--placeholder="发起人 id"></el-input>-->
           <el-button type="primary" @click="resetPartyData">搜索</el-button>
         </div>
 
         <div class="table_handle">
-          <el-button type="danger" @click="deleteParty(checked)" v-if="hasPrivileges('partying_manage')">删除</el-button>
+          <el-button type="danger" @click="deleteParty(checked)"
+                     v-if="hasPrivileges('partying_manage')">删除
+          </el-button>
           <el-button style="visibility:hidden">占位</el-button>
           <el-button type="success" style="float:right" @click="exportExcel('party')">导出表格
           </el-button>
         </div>
+        <el-dialog title="置顶聚会" v-model="setTop.isShow" size="tiny">
+          <el-form ref="form" :model="setTop" label-width="80px">
+            <el-form-item label="置顶时长:">
+              <el-select v-model="setTop.selected" clearable placeholder="选择时长">
+                <el-option
+                  v-for="item in setTop.options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+                        <el-button @click="setTop.isShow = false">取 消</el-button>
+                        <el-button type="primary" @click="sureSetTop">确 定</el-button>
+                    </span>
+        </el-dialog>
         <!--    聚会列表    -->
         <div class="table_box">
           <table class="table" id="party">
@@ -111,8 +132,10 @@
               <td>{{item.applicant.num}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showParty(item.id)">查看</a>
-                <a href="javascript:void(0)" @click="deleteParty(item.id)" v-if="hasPrivileges('partying_manage')">删除</a>
-                <a href="javascript:void(0)" @click="setTop(item.id)">置顶</a>
+                <a href="javascript:void(0)" @click="deleteParty(item.id)"
+                   v-if="hasPrivileges('partying_manage')">删除</a>
+                <a href="javascript:void(0)" @click="setTopFun(item.id)"
+                   v-if="hasPrivileges('partying_manage')">置顶</a>
               </td>
             </tr>
             </tbody>
@@ -223,8 +246,12 @@
         </el-dialog>
 
         <div class="table_handle">
-          <el-button type="primary" @click="deletePartyType(partyType.checked)" v-if="hasPrivileges('partying_manage')">删除</el-button>
-          <el-button type="" @click="createTypeShow = true" style="float:right" v-if="hasPrivileges('partying_add')">新建聚会类型</el-button>
+          <el-button type="primary" @click="deletePartyType(partyType.checked)"
+                     v-if="hasPrivileges('partying_manage')">删除
+          </el-button>
+          <el-button type="" @click="createTypeShow = true" style="float:right"
+                     v-if="hasPrivileges('partying_add')">新建聚会类型
+          </el-button>
         </div>
         <delete v-if="partyType.showDelete" :checked="partyType.checked" :cancel="cancelDeleteType"
                 :confirm="confirmDelete"></delete>
@@ -258,8 +285,10 @@
               <td>{{ item.num }}</td>
               <td>{{ item.range }}</td>
               <td class="operation">
-                <a href="javascript:void(0)" @click="sortParty(item.id)" v-if="hasPrivileges('partying_manage')">排序</a>
-                <a href="javascript:void(0)" @click="deletePartyType(item.id)" v-if="hasPrivileges('partying_manage')">删除</a>
+                <a href="javascript:void(0)" @click="sortParty(item.id)"
+                   v-if="hasPrivileges('partying_manage')">排序</a>
+                <a href="javascript:void(0)" @click="deletePartyType(item.id)"
+                   v-if="hasPrivileges('partying_manage')">删除</a>
               </td>
             </tr>
             </tbody>
@@ -282,11 +311,13 @@
 </template>
 
 <script>
+  import ElTabPane from '../../../../node_modules/element-ui/packages/tabs/src/tab-pane';
   export default {
+    components: { ElTabPane },
     name: 'gathering',
     data () {
       return {
-        loading:false,
+        loading: false,
         activeName: 'first',
         partyPage: {
           currentPage: 1,
@@ -305,13 +336,33 @@
           name: '',
           num: '',
         },
+        setTop: {
+          isShow: false,
+          selected: "",
+          options: [{
+            value: 3,
+            label: "3天",
+          }, {
+            value: 5,
+            label: "5天",
+          }, {
+            value: 7,
+            label: "7天",
+          }, {
+            value: 10,
+            label: "10天",
+          }, {
+            value: 15,
+            label: "15天",
+          },],
+        },
         showDelete: false,
         showPartyDetail: false,
         partyDetail: {},
         isIndeterminate: false,
         isCheckedAll: false,
         checked: [],
-        partySelectType:[],
+        partySelectType: [],
         partySelectKey: {
           type: '',
           cost: '',
@@ -320,7 +371,7 @@
           organiser: '',
         },
         partySelectScope: {
-          organisers:[],
+          organisers: [],
           cost: [{
             value: '免费',
             label: '免费'
@@ -377,7 +428,7 @@
         },
         data: [],
         partyType: {
-          showDelete:false,
+          showDelete: false,
           isCheckedAll: false,
           isIndeterminate: false,
           checked: [],
@@ -389,7 +440,7 @@
       var that = this;
       this.$http.get('http://' + global.URL + '/v1/party/list?page=' + that.partyPage.currentPage + '&limit=' + that.partyPage.pageSize).then((response) => {
         console.log(response)
-        var arr = response.body.list||[];
+        var arr = response.body.list || [];
         var YN = ['否', '是']
         that.partyPage.total = response.body.total;
         for (let i = 0, length = arr.length; i < length; i++) {
@@ -431,8 +482,8 @@
           }
           that.partyType.data.push(o)
           this.partySelectType.push({
-            label:o.type,
-            value:o.id,
+            label: o.type,
+            value: o.id,
           });
         }
 
@@ -456,34 +507,38 @@
       })()
     },
     methods: {
-      setTop(id){
+      setTopFun(id){
+        this.setTop.isShow = true;
         console.log(id);
       },
+      sureSetTop(){
+        this.setTop.isShow = false;
+      },
       remoteMethod(name){
-        this.partySelectScope.organisers=[];
-        if(name!==''){
+        this.partySelectScope.organisers = [];
+        if (name !== '') {
           this.loading = true;
-          setTimeout(()=>{
+          setTimeout(() => {
             this.loading = false;
-            this.$http.get('http://'+ global.URL +'/v1/user/find?name='+name).then((res) => {
-              if(res.body.code == 200 || res.body.code == 201){
+            this.$http.get('http://' + global.URL + '/v1/user/find?name=' + name).then((res) => {
+              if (res.body.code == 200 || res.body.code == 201) {
                 console.log(res.body.list);
-                let arr=res.body.list||[];
-                arr.forEach((item)=>{
+                let arr = res.body.list || [];
+                arr.forEach((item) => {
                   this.partySelectScope.organisers.push({
-                    value:item.userId,
-                    label:item.name,
+                    value: item.userId,
+                    label: item.name,
                   })
                 });
               }
             })
-          },500);
+          }, 500);
         }
       },
       resetTypeData(){
         this.partyType.data = [];
         this.partyType.checked = [];
-        this.partyType.showDelete=false;
+        this.partyType.showDelete = false;
         this.partyType.isIndeterminate = false;
         this.partyType.isCheckedAll = false;
         var that = this;
@@ -609,7 +664,6 @@
         this.resetPartyData();
       },
       showParty(o){
-        console.log(o)
         this.showPartyDetail = true;
         this.$http.get('http://' + global.URL + '/v1/party/detail/' + o).then((res) => {
           console.log(res)
@@ -625,7 +679,7 @@
       },
       deletePartyType(o){
         this.partyType.checked = [];
-        if (typeof o == 'object'&&o.length>0) {
+        if (typeof o == 'object' && o.length > 0) {
           this.partyType.checked = o.join(",")
           this.partyType.showDelete = true
         } else if (typeof o == 'number') {
@@ -635,7 +689,7 @@
       },
       deleteParty(o){
         this.checked = []
-        if (typeof o == 'object'&&o.length>0) {
+        if (typeof o == 'object' && o.length > 0) {
           this.checked = o.join(",")
           this.showDelete = true
         } else if (typeof o == 'number') {

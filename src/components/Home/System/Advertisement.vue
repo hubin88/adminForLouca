@@ -33,7 +33,7 @@
                 </div>
 
                 <div class="table_handle">
-                    <el-button type="danger" @click="changeStateAD(checked,'7')"  v-if="hasPrivileges('place_manage')">删除</el-button>
+                    <el-button type="danger" @click="changeStateAD(checked,'7')"  v-if="hasPrivileges('plan_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('advertisement')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="createAdvertisement=true" v-if="hasPrivileges('plan_add')">创建广告</el-button>
@@ -270,8 +270,8 @@
                                 <td>{{item.overdueTime}}</td>
                                 <td>{{item.creator}}</td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="showEditADNow(item.id)" v-if="hasPrivileges('place_edit')">编辑</a>
-                                    <a href="javascript:void(0)" @click="changeStateAD(item.id,'7')" v-if="hasPrivileges('place_manage')">删除</a>
+                                    <a href="javascript:void(0)" @click="showEditADNow(item.id)" v-if="hasPrivileges('plan_edit')">编辑</a>
+                                    <a href="javascript:void(0)" @click="changeStateAD(item.id,'7')" v-if="hasPrivileges('plan_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -317,7 +317,7 @@
 
                 <!--        操作区        -->
                 <div class="table_handle">
-                    <el-button type="primary" @click="changeStateMaterial(material.checked,'7')" v-if="hasPrivileges('place_manage')">删除</el-button>
+                    <el-button type="primary" @click="changeStateMaterial(material.checked,'7')" v-if="hasPrivileges('material_manage')">删除</el-button>
                     <el-button style="visibility:hidden">占位</el-button>
                     <el-button type="success" style="float:right" @click="exportExcel('material')">导出表格</el-button>
                     <el-button type="" style="float:right" @click="material.addMaterial=true" v-if="hasPrivileges('material_add')">添加物料</el-button>
@@ -371,7 +371,7 @@
                     </div>
 
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="addMaterial = false">取 消</el-button>
+                        <el-button @click="material.addMaterial = false">取 消</el-button>
                         <el-button type="primary" @click="addMaterialNow">添 加</el-button>
                     </div>
                 </el-dialog>
@@ -404,7 +404,7 @@
                     </div>
 
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="material.showLoucation = false">取 消</el-button>
+                        <el-button @click="material.showLocation = false">取 消</el-button>
                         <el-button type="primary" @click="addLoucationNow()">添 加</el-button>
                     </div>
                 </el-dialog>
@@ -446,8 +446,8 @@
                                 <td>{{item.createTime}}</td>
                                 <td>{{item.creator}}</td>
                                 <td class="operation">
-                                    <a href="javascript:void(0)" @click="showEditMaterialNow(item.id)" v-if="hasPrivileges('place_edit')">编辑</a>
-                                    <a href="javascript:void(0)" @click="changeStateMaterial(item.id,'7')" v-if="hasPrivileges('place_manage')">删除</a>
+                                    <a href="javascript:void(0)" @click="showEditMaterialNow(item.id)" v-if="hasPrivileges('material_edit')">编辑</a>
+                                    <a href="javascript:void(0)" @click="changeStateMaterial(item.id,'7')" v-if="hasPrivileges('material_manage')">删除</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -511,7 +511,7 @@
                         <div class="clear"></div>
                     </div>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="showEdit = false">取 消</el-button>
+                        <el-button @click="material.showEdit=false">取 消</el-button>
                         <el-button type="primary" @click="editMaterialNow">编 辑</el-button>
                     </div>
                 </el-dialog>
@@ -1114,7 +1114,6 @@ export default {
 				o.scope.regionId = [];
 			}
 
-            console.log(o)
             this.$http.post('http://'+ global.URL +'/v1/advert/schedule',o).then((res) => {
                 console.log(res);
                 this.resetAdvertisementData();

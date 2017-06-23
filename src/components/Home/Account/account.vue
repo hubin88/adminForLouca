@@ -6,23 +6,23 @@
           <el-input v-model="searchUser" placeholder="请输入昵称或手机号" style="width:160px;"></el-input>
           <el-button type="primary" @click="resetData">搜索</el-button>
         </div>
-        <el-row :gutter="10">
-          <el-col :span="2">
-            <div class="grid-content bg-purple">概况</div>
-          </el-col>
-          <el-col :span="4">
-            <div class="grid-content bg-purple-light">账户余额:<span>1000元</span></div>
-          </el-col>
-          <el-col :span="4">
-            <div class="grid-content bg-purple">可提现金额:<span>1000元</span></div>
-          </el-col>
-          <el-col :span="4">
-            <div class="grid-content bg-purple-light">冻结金额:<span>1000元</span></div>
-          </el-col>
-          <el-col :span="4">
-            <div class="grid-content bg-purple">已提现金额:<span>1000元</span></div>
-          </el-col>
-        </el-row>
+        <!--<el-row :gutter="10">-->
+          <!--<el-col :span="2">-->
+            <!--<div class="grid-content bg-purple">概况</div>-->
+          <!--</el-col>-->
+          <!--<el-col :span="4">-->
+            <!--<div class="grid-content bg-purple-light">账户余额:<span>1000元</span></div>-->
+          <!--</el-col>-->
+          <!--<el-col :span="4">-->
+            <!--<div class="grid-content bg-purple">可提现金额:<span>1000元</span></div>-->
+          <!--</el-col>-->
+          <!--<el-col :span="4">-->
+            <!--<div class="grid-content bg-purple-light">冻结金额:<span>1000元</span></div>-->
+          <!--</el-col>-->
+          <!--<el-col :span="4">-->
+            <!--<div class="grid-content bg-purple">已提现金额:<span>1000元</span></div>-->
+          <!--</el-col>-->
+        <!--</el-row>-->
         <div class="table_box">
           <el-table
             class="table"

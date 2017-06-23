@@ -13,9 +13,12 @@
             <td>{{item.name}}</td>
             <td>{{item.amount}}</td>
             <td class="operation">
-              <a href="javascript:void(0)" @click="showAuthorityList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑角色权限</a>
-              <a href="javascript:void(0)" @click="showRoleList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑用户</a>
-              <a href="javascript:void(0)" @click="delteRole(item.roleId)" v-if="hasPrivileges('role_manage')">删除角色</a>
+              <!--<a href="javascript:void(0)" @click="showAuthorityList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑角色权限</a>-->
+              <!--<a href="javascript:void(0)" @click="showRoleList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑用户</a>-->
+              <!--<a href="javascript:void(0)" @click="delteRole(item.roleId)" v-if="hasPrivileges('role_manage')">删除角色</a>-->
+              <a href="javascript:void(0)" @click="showAuthorityList(item.roleId)">查看和编辑角色权限</a>
+              <a href="javascript:void(0)" @click="showRoleList(item.roleId)">查看和编辑用户</a>
+              <a href="javascript:void(0)" @click="delteRole(item.roleId)">删除角色</a>
             </td>
           </tr>
         </table>

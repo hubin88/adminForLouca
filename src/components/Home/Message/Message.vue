@@ -5,7 +5,7 @@
         <!--       操作区         -->
         <div class="table_handle">
           <el-button style="visibility:hidden">占位</el-button>
-          <el-button type="success" style="float:right" @click="addNewMessage">新建群发</el-button>
+          <el-button type="success" style="float:right" @click="addNewMessage" v-if="hasPrivileges('message_add')">新建群发</el-button>
         </div>
         <!--消息列表-->
         <div class="table_box">
@@ -46,9 +46,9 @@
               <template scope="scope">
                 <el-button @click="showDetail(scope.row.msgId)" size="small" type="info">查看
                 </el-button>
-                <el-button @click="editMessage(scope.row.msgId)" size="small" type="info">编辑
+                <el-button @click="editMessage(scope.row.msgId)" size="small" type="info"  v-if="hasPrivileges('message_edit')">编辑
                 </el-button>
-                <el-button @click="deleteMessage(scope.row.msgId)" size="small" type="danger">删除
+                <el-button @click="deleteMessage(scope.row.msgId)" size="small" type="danger"  v-if="hasPrivileges('message_manage')">删除
                 </el-button>
               </template>
             </el-table-column>
