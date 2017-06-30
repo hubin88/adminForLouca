@@ -105,9 +105,14 @@
 				  </span>
         </el-dialog>
 
-        <el-dialog title="创建社区" v-model="showCreate" top="20px">
+        <el-dialog title="创建社区" v-model="showCreate" top="20px" @close="resetMap()">
+          <div style="margin-top: -20px;">
+            <el-tooltip class="item" effect="dark" content="点击地图选择地址，然后点击一次右边的文本框使其获得焦点，之后按下回车键在出现的选项中用鼠标选择地点" placement="right">
+              <i class="icon el-icon-information"></i>
+            </el-tooltip>
+          </div>
           <iframe src="../../../../static/map.html" width="100%"
-                  height="400"></iframe>
+                  height="400" name="mapFrame"></iframe>
           <el-form :model="create">
             <el-form-item label="社区名称" :label-width="'80px'">
               <el-input v-model="create.name" auto-complete="off"></el-input>
@@ -127,14 +132,19 @@
             </el-form-item>
           </el-form>
           <span slot="footer" class="dialog-footer">
-					<el-button @click="showCreate = false">取 消</el-button>
+					<el-button @click="resetMap()">取 消</el-button>
 					<el-button type="primary" @click="createNow()">确 定</el-button>
 				  </span>
         </el-dialog>
 
-        <el-dialog title="编辑社区" v-model="showEdit"  top="20px">
+        <el-dialog title="编辑社区" v-model="showEdit" top="20px">
+          <div style="margin-top: -20px;">
+            <el-tooltip class="item" effect="dark" content="点击地图选择地址，然后点击一次右边的文本框使其获得焦点，之后按下回车键在出现的选项中用鼠标选择地点" placement="right">
+              <i class="icon el-icon-information"></i>
+            </el-tooltip>
+          </div>
           <iframe src="../../../../static/map.html" width="100%"
-                  height="400" id="editIframe"></iframe>
+                  height="400" name="mapFrame"></iframe>
           <el-form :model="edit">
             <el-form-item label="社区名称" :label-width="'80px'">
               <el-input v-model="edit.name" auto-complete="off"></el-input>
@@ -150,7 +160,7 @@
             </el-form-item>
           </el-form>
           <span slot="footer" class="dialog-footer">
-					<el-button @click="showEdit = false">取 消</el-button>
+					<el-button @click="resetMap()">取 消</el-button>
 					<el-button type="primary" @click="editNow()">确 定</el-button>
 				  </span>
         </el-dialog>
@@ -212,7 +222,6 @@
       var that = this;
       this.action = 'http://' + global.URL + '/v1/file/upload?kind=2';
       this.$http.get('http://' + global.URL + '/v1/group/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize).then((response) => {
-        console.log(response)
         var arr = response.body.list;
         that.page.total = response.body.total;
         for (let i = 0, length = arr.length; i < length; i++) {
@@ -259,21 +268,28 @@
       }
     },
     methods: {
+      resetMap(){
+        this.showCreate = false;
+        this.showEdit = false;
+      },
       creatCommity(){
         this.showCreate = true;
+        window.addressName="";
+        try {
+          window.mapFrame.location.reload();
+        } catch (e) {}
       },
       setCreateData(obj){
-        console.log(obj);
-        if(this.showCreate){
+        if (this.showCreate) {
           Object.assign(this.create, {
             address: obj.address,
-            introduce:`基于${obj.name}建立的聊天群，只有本公社成员方可进入。`,
+            introduce: `基于${obj.name}建立的聊天群，只有本公社成员方可进入。`,
             latitude: obj.location.lat,
             longitude: obj.location.lng,
             name: obj.name,
-            city:obj.cityname,
+            city: obj.cityname,
           });
-        }else{
+        } else {
           Object.assign(this.edit, {
             latitude: obj.location.lat,
             longitude: obj.location.lng,
@@ -384,7 +400,7 @@
         this.$http.post('http://' + global.URL + '/v1/group', this.create).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('操作成功');
-            this.showCreate=false;
+            this.showCreate = false;
           } else {
             this.$message(res.body.message)
           }
@@ -402,6 +418,10 @@
             this.edit.longitude = res.body.data.longitude;
             this.edit.latitude = res.body.data.latitude;
           }
+          window.addressName = res.body.data.name;
+          try {
+            window.mapFrame.location.reload();
+          } catch (e) {}
         });
       },
       editNow(){
@@ -489,5 +509,11 @@
     color: #20a0ff;
     padding: 0 2px;
   }
-
+  .icon{
+    display: inline-block;
+    width: 20px;
+    height: 25px;
+    font-size: 20px;
+    line-height: 20px;
+  }
 </style>

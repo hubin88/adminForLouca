@@ -146,6 +146,7 @@
     position: absolute;
     top: 86px;
     bottom: 0px;
+    border-top: 2px solid rgb(202, 202, 202);
   }
 
   .clear {
@@ -156,15 +157,17 @@
       aside
   */
   aside {
-    width: 310px;
+    width: 200px;
     height: 100%;
     position: relative;
     left: 0;
     top: 0;
     background: url(../assets/home/images/bg1.png);
     background-repeat: repeat-y;
+    background-size: 90%;
     float: left;
-    overflow: auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 
   .fold aside {
@@ -189,8 +192,8 @@
   }
 
   .hide_box {
+    width: 98%;
     text-align: right;
-    width: 310px;
     height: 40px;
     font-size: 16px;
     background: rgb(70, 70, 78);
@@ -221,7 +224,7 @@
   }
 
   .nav_icon {
-    width: 86px;
+    width: 50px;
     height: 65px;
     position: absolute;
     left: 0;
@@ -241,14 +244,14 @@
 
   .nav_text {
     cursor: pointer;
-    width: 204px;
+    width: 129px;
     height: 65px;
     position: absolute;
-    right: 0;
+    left: 50px;
     top: 0;
-    padding-left: 20px;
+    padding-left: 10px;
     font-size: 20px;
-    background: rgb(65, 65, 74);
+    /*background: rgb(65, 65, 74);*/
     line-height: 65px;
     color: rgb(149, 160, 170);
     overflow: hidden;
@@ -280,7 +283,7 @@
 
   .second_nav {
     display: none;
-    width: 100%;
+    width: 90%;
     background: rgb(65, 65, 74);
   }
 
@@ -296,7 +299,7 @@
   }
 
   .second_nav li span {
-    margin-left: 125px;
+    margin-left: 60px;
   }
 
   .second_nav li:hover {
@@ -310,7 +313,7 @@
   .content {
     overflow: auto;
     position: absolute;
-    left: 310px;
+    left: 200px;
     right: 0;
     width: auto;
     height: 100%;

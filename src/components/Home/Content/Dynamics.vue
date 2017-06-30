@@ -483,6 +483,10 @@
         <!--      推荐      -->
         <el-dialog title="推荐信息" v-model="showRecommend" size="tiny">
           <el-input-number v-model="recommendValue" :min="1" :max="100"></el-input-number>
+          <el-tooltip class="item" effect="dark" content="填入1~100之间的数字，越小越靠前"
+                      placement="right">
+            <i class="icon el-icon-information"></i>
+          </el-tooltip>
           <span slot="footer" class="dialog-footer">
                         <el-button @click="showRecommend = false">取 消</el-button>
                         <el-button type="primary" @click="recommendNow">确 定</el-button>
@@ -678,7 +682,6 @@
       var that = this;
       this.action = 'http://' + global.URL + '/v1/file/upload?kind=1';
       this.$http.get('http://' + global.URL + '/v1/newsletter/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize).then((response) => {
-        console.log(response)
         var arr = response.body.list;
         var YN = ['否', '是']
         that.page.total = response.body.total
@@ -719,7 +722,6 @@
       });
 
       this.$http.get('http://' + global.URL + '/v1/region?page=1&limit=999').then((res) => {
-        console.log('商圈选择:' + res)
         if (res.body.code == 200 || res.body.code == 201) {
           for (let i = 0; i < res.body.list.length; i++) {
             let o = {
@@ -864,7 +866,6 @@
             this.loading = false;
             this.$http.get('http://' + global.URL + '/v1/user/find?name=' + name).then((res) => {
               if (res.body.code == 200 || res.body.code == 201) {
-                console.log(res.body.list);
                 let arr = res.body.list || [];
                 arr.forEach((item)=> {
                   this.selectKey.users.push({
@@ -879,11 +880,9 @@
       },
       choseTelphone(e){
         let value = e.target.value;
-        console.log(value);
         if (value !== '') {
           this.$http.get('http://' + global.URL + '/v1/user/find?phone=' + value).then((res) => {
             if (res.body.code == 200 || res.body.code == 201) {
-              console.log(res);
               this.selectKey.issuer = res.body.list[0].userId;
             }
           })
@@ -942,7 +941,6 @@
       },
       // 按商圈选择
       selectArea(){
-        console.log(this.selectKey.area);
         this.selectScope.group = [];
         for (let i = 0; i < this.selectKey.area.length; i++) {
           this.$http.get('http://' + global.URL + '/v1/region/' + this.selectKey.area[i] + '/group').then((res) => {
@@ -969,7 +967,6 @@
         this.getUserId(ids[1], "issuer");
       },
       interactionSuccess(){
-        console.log(this.interaction);
         const type = this.interaction.interactionType;
         switch (type) {
           case 1:
@@ -1022,15 +1019,13 @@
         }
         this.interaction.showInteraction = false;
       },
-      recommendNow(o){
+      recommendNow(){
         var obj = {
           newsletterId: this.recommend.singlo,
           sorting: this.recommendValue.toString()
         }
-        console.log(obj)
         this.showRecommend = false;
         this.$http.put('http://' + global.URL + '/v1/newsletter/updated', obj).then((res) => {
-          console.log(res)
           if (res.body.code == 200) {
             this.$message('推荐成功');
             this.resetData();
@@ -1043,7 +1038,6 @@
         })
       },
       interactionTypeChange(label){
-        console.log(label);
         if (label === 1) {
           this.interaction.isComment = true
         } else {
@@ -1070,7 +1064,6 @@
       },
       confirmDelete(id){
         this.$http.delete('http://' + global.URL + '/v1/newsletter/?ids=' + id).then((res) => {
-          console.log(res)
           if (res.body.code == 200) {
             this.resetData();
             this.$message('删除成功');
@@ -1090,7 +1083,6 @@
         var parameter = '';
         if (this.selectKey.createTime) {
           if (Boolean(this.selectKey.createTime[0])) {
-            console.log(this.selectKey.createTime)
             let sDate = new Date(this.selectKey.createTime[0]);
             let sYear = sDate.getFullYear();
             let sMonth = sDate.getMonth() + 1;
@@ -1120,7 +1112,6 @@
         }
 
         if (this.selectKey.group && this.selectKey.group.length != 0) {
-          console.log(this.selectKey.group.length)
           parameter += '&groups=' + this.selectKey.group.join(',');
         } else if (this.selectKey.area && this.selectKey.area.length != 0) {
           var strArr = []
@@ -1138,9 +1129,7 @@
           parameter += '&recommend=1'
         }
 
-        console.log(parameter)
         this.$http.get('http://' + global.URL + '/v1/newsletter/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize + parameter).then((response) => {
-          console.log(response)
           if (!response.body.list) {
             return false;
           }
@@ -1197,7 +1186,6 @@
           }
         }
         this.isIndeterminate = false;
-        console.log(this.checked)
       },
       checkOne: function (isChecked, id) {
         if (isChecked) {
@@ -1218,7 +1206,6 @@
         } else {
           this.isIndeterminate = true;
         }
-        console.log(this.checked)
       },
       handleSizeChange(val) {
         this.page.pageSize = val;
@@ -1235,10 +1222,8 @@
       showDynamic(o){
         this.showDetail = this.showDetail ? false : true;
         this.$http.get('http://' + global.URL + '/v1/newsletter/' + o).then((res) => {
-          console.log(res)
           this.newsdetail = res.body.data;
         })
-        console.log(o)
       },
       interact(newsletterId, publisherId){
         this.interaction.showInteraction = true;
@@ -1281,11 +1266,9 @@
         }
       },
       successUnload(img, arr){
-        console.log(arr)
         this.issue.img = arr;
       },
       deleteUnload(img, arr){
-        console.log(arr)
         this.issue.img = arr;
       },
       //更改标签
@@ -1300,7 +1283,6 @@
           "tagId": this.change.labelId
         }
         this.$http.put('http://' + global.URL + '/v1/newsletter', o).then((res) => {
-          console.log(res)
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('操作成功')
           } else {
@@ -1634,6 +1616,16 @@
   .issuerPic img {
     width: 100%;
     height: 100%;
+  }
+  .icon{
+    display: inline-block;
+    width: 20px;
+    height: 25px;
+    font-size: 20px;
+    line-height: 20px;
+    position: absolute;
+    top:77px;
+    margin-left: 5px;
   }
 </style>
 /**

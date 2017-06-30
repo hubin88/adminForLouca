@@ -111,9 +111,7 @@
         <!--        更改社区        -->
         <el-dialog title="更改社区" v-model="showEditGroup" size="tiny">
           <el-form :model="editGroup">
-            <el-form-item label="社区id" label-width="60px">
-              <!--<el-input-number v-model="editGroup.groupId" :min="10000"-->
-                               <!--:max="100000"></el-input-number>-->
+            <el-form-item label="社区" label-width="60px">
               <el-cascader
                 v-model="editGroup.groupId"
                 :options="this.addUserOptions.groups"
@@ -193,21 +191,21 @@
 
         <div class="search_box">
           <el-select v-model="selectKey.area" multiple placeholder="选择商圈" @change="selectArea"
-                     style="width:160px">
+                     style="width:150px">
             <el-option
               v-for="item in selectScope.area"
               :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-model="selectKey.group" multiple placeholder="选择社区" style="width:160px;">
+          <el-select v-model="selectKey.group" multiple placeholder="选择社区" style="width:150px;">
             <el-option
               v-for="item in selectScope.group"
               :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-model="selectKey.state" clearable placeholder="认证状态">
+          <el-select v-model="selectKey.state" clearable placeholder="认证状态" style="width:110px;">
             <el-option
               v-for="item in selectScope.state"
               :label="item.label"
@@ -227,7 +225,7 @@
             placeholder="请选择时间"
             align="right">
           </el-date-picker>
-          <div class="searchUser" style="width:260px">
+          <div class="searchUser" style="width:220px">
             <el-input placeholder="请输入内容" v-model="selectKey.userKey">
               <el-select v-model="selectKey.selectUser" slot="prepend" clearable placeholder="请选择">
                 <el-option label="昵称" value="昵称"></el-option>

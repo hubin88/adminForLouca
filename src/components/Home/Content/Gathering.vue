@@ -134,8 +134,8 @@
                 <a href="javascript:void(0)" @click="showParty(item.id)">查看</a>
                 <a href="javascript:void(0)" @click="deleteParty(item.id)"
                    v-if="hasPrivileges('partying_manage')">删除</a>
-                <a href="javascript:void(0)" @click="setTopFun(item.id)"
-                   v-if="hasPrivileges('partying_manage')">置顶</a>
+                <a href="javascript:void(0)" @click="setTopFun(item)"
+                   v-if="hasPrivileges('partying_manage')">{{item.stick ? "取消置顶" : "置顶"}}</a>
               </td>
             </tr>
             </tbody>
@@ -338,7 +338,8 @@
         },
         setTop: {
           isShow: false,
-          selected: "",
+          selected: 3,
+          id: "",
           options: [{
             value: 3,
             label: "3天",
@@ -439,9 +440,7 @@
     mounted: function () {
       var that = this;
       this.$http.get('http://' + global.URL + '/v1/party/list?page=' + that.partyPage.currentPage + '&limit=' + that.partyPage.pageSize).then((response) => {
-        console.log(response)
         var arr = response.body.list || [];
-        var YN = ['否', '是']
         that.partyPage.total = response.body.total;
         for (let i = 0, length = arr.length; i < length; i++) {
           let o = {
@@ -457,6 +456,8 @@
             place: arr[i].address,
             expenses: arr[i].cost,
             state: arr[i].state,
+            stick: arr[i].stick,
+            stickId:arr[i].stickId,
             applicant: {
               num: arr[i].registerNumber,
             },
@@ -468,9 +469,7 @@
       });
 
       this.$http.get('http://' + global.URL + '/v1/party/tag/list?page=' + that.typePage.currentPage + '&limit=' + that.typePage.pageSize).then((response) => {
-        console.log(response)
         var arr = response.body.list;
-        var YN = ['否', '是']
         that.typePage.total = response.body.total;
         for (let i = 0, length = arr.length; i < length; i++) {
           let o = {
@@ -480,13 +479,12 @@
             range: arr[i].sort,
             isChecked: false
           }
-          that.partyType.data.push(o)
+          that.partyType.data.push(o);
           this.partySelectType.push({
             label: o.type,
             value: o.id,
           });
         }
-
       });
       (function init() {
         $('.dynamics_show .el-card__body').css({
@@ -507,12 +505,53 @@
       })()
     },
     methods: {
-      setTopFun(id){
-        this.setTop.isShow = true;
-        console.log(id);
+
+      formatTime(time){
+        function add0(val) {
+          if (val < 10) {
+            return "0" + val;
+          }
+          return val;
+        }
+
+        const eDate = time;
+        const eYear = eDate.getFullYear();
+        const eMonth = eDate.getMonth() + 1;
+        const eDay = eDate.getDate();
+        const eHours = eDate.getHours();
+        const eMinutes = eDate.getMinutes();
+        const eSeconds = eDate.getSeconds();
+        const eStr = eYear + '-' + add0(eMonth) + '-' + add0(eDay) + ' ' + add0(eHours) + ':' + add0(eMinutes) + ':' + add0(eSeconds);
+        return eStr;
+      },
+      setTopFun(item){
+        if (item.stick) {
+          this.$http.delete('http://' + global.URL + '/v1/party/cancel/stick/' + item.stickId).then(res => {
+            if (res.body.code == 200 || res.body.code == 201) {
+              this.$message('已取消置顶');
+              this.resetPartyData();
+            }
+          });
+        } else {
+          this.setTop.isShow = true;
+          this.setTop.id = item.id;
+          this.setTop.selected = 3;
+        }
       },
       sureSetTop(){
         this.setTop.isShow = false;
+        const time = new Date().getTime() + this.setTop.selected * 24 * 3600 * 1000;
+        const obj = {
+          end: this.formatTime(new Date(time)),
+          partyingId: this.setTop.id,
+          sort: "50",
+        };
+        this.$http.put('http://' + global.URL + '/v1/party/stick', obj).then(res => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            this.$message('置顶成功');
+            this.resetPartyData();
+          }
+        });
       },
       remoteMethod(name){
         this.partySelectScope.organisers = [];
@@ -522,7 +561,6 @@
             this.loading = false;
             this.$http.get('http://' + global.URL + '/v1/user/find?name=' + name).then((res) => {
               if (res.body.code == 200 || res.body.code == 201) {
-                console.log(res.body.list);
                 let arr = res.body.list || [];
                 arr.forEach((item) => {
                   this.partySelectScope.organisers.push({
@@ -538,19 +576,17 @@
       resetTypeData(){
         this.partyType.data = [];
         this.partyType.checked = [];
-        this.partyType.showDelete = false;
+        this.partyType.showDeconste = false;
         this.partyType.isIndeterminate = false;
         this.partyType.isCheckedAll = false;
         var that = this;
-        var parameter = '';
 
         this.$http.get('http://' + global.URL + '/v1/party/tag/list?page=' + that.typePage.currentPage + '&limit=' + that.typePage.pageSize).then((response) => {
           console.log(response)
           var arr = response.body.list;
-          var YN = ['否', '是']
           that.typePage.total = response.body.total;
           for (let i = 0, length = arr.length; i < length; i++) {
-            let o = {
+            const o = {
               id: arr[i].tagId,
               type: arr[i].name,
               num: arr[i].usages,
@@ -621,14 +657,11 @@
           parameter += '&userId=' + this.partySelectKey.organiser
         }
 
-        console.log(parameter)
         this.$http.get('http://' + global.URL + '/v1/party/list?page=' + that.partyPage.currentPage + '&limit=' + that.partyPage.pageSize + parameter).then((response) => {
-          //console.log(response)
           if (!response.body.list) {
             return false;
           }
           var arr = response.body.list;
-          var YN = ['否', '是']
           that.partyPage.total = response.body.total
 
           for (let i = 0, length = arr.length; i < length; i++) {
@@ -645,14 +678,15 @@
               place: arr[i].address,
               expenses: arr[i].cost,
               state: arr[i].state,
+              stick: arr[i].stick,
+              stickId:arr[i].stickId,
               applicant: {
                 num: arr[i].registerNumber,
               },
               isChecked: false
             }
-            that.data.push(o)
+            that.data.push(o);
           }
-
         });
       },
       handleSizeChangeParty(val) {
@@ -714,17 +748,14 @@
       handleSizeChange(val) {
         this.typePage.pageSize = val;
         this.resetTypeData();
-        console.log(`每页 ${val} 条`);
       },
       handleCurrentChange(val) {
         this.typePage.currentPage = val;
         this.resetTypeData();
-        console.log(`当前页: ${val}`);
       },
       checkAll: function (isChecked) {
         this.checked = [];
         if (isChecked) {
-          console.log('aaa')
           for (let i = 0; i < this.data.length; i++) {
             this.data[i].isChecked = true;
             this.checked.push(this.data[i].id)
@@ -756,7 +787,6 @@
         } else {
           this.isIndeterminate = true;
         }
-        console.log(this.checked)
       },
       checkAllType(isChecked){
         this.partyType.checked = [];
