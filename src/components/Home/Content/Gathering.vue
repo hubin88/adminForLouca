@@ -341,15 +341,33 @@
           selected: 3,
           id: "",
           options: [{
+            value: 1,
+            label: "1天",
+          }, {
+            value: 2,
+            label: "2天",
+          }, {
             value: 3,
             label: "3天",
+          }, {
+            value: 4,
+            label: "4天",
           }, {
             value: 5,
             label: "5天",
           }, {
+            value: 6,
+            label: "6天",
+          },{
             value: 7,
             label: "7天",
           }, {
+            value: 8,
+            label: "8天",
+          }, {
+            value: 9,
+            label: "9天",
+          },{
             value: 10,
             label: "10天",
           }, {

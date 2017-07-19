@@ -20,7 +20,7 @@
             <el-table-column
               prop="msgId"
               label="消息ID"
-              width="100"
+              width="200"
             ></el-table-column>
             <el-table-column
               prop="kind"
@@ -41,6 +41,26 @@
               label="状态"
               width="120"
             ></el-table-column>
+            <el-table-column label="发送统计">
+              <el-table-column
+                prop="total"
+                label="预计"
+                width="100"
+              >
+              </el-table-column>
+              <el-table-column
+                prop="success"
+                label="成功"
+                width="100"
+              >
+              </el-table-column>
+              <el-table-column
+                prop="failure"
+                label="失败"
+                width="100"
+              >
+              </el-table-column>
+            </el-table-column>
             <el-table-column
               label="操作"
               width="220"
@@ -115,9 +135,8 @@
       <el-form :model="form" labelWidth="80px">
         <el-form-item label="发送方式">
           <el-radio-group v-model="form.sendType">
-            <el-radio label="1">混合(先APP内，失败再短信)</el-radio>
-            <el-radio label="2">app消息</el-radio>
-            <el-radio label="3">短信</el-radio>
+            <el-radio label="1">app消息</el-radio>
+            <el-radio label="2">短信</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="消息类型">
@@ -191,13 +210,27 @@
             </el-form-item>
           </template>
         </template>
-        <el-form-item label="发送内容">
-          <el-input type="textarea" v-model="form.content" style="width: 100%" :maxlength="1000"
-                    :autosize="{minRows:5}" @change="changeContent"
+        <el-form-item v-if="form.sendType==='2'" label="短信模板" prop="messageMould">
+          <el-input
+            v-model="form.messageMould"
+            placeholder="请输入短信模板，例如：SMS_36160070"
+          ></el-input>
+          <el-tooltip class="item" effect="dark"
+                      content="模板的格式为SMS_XXXXXXXX，一个X代表一个数字，总共8个数字" placement="right">
+            <i class="icon el-icon-information"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item
+          v-else
+          label="发送内容"
+          style="clear: right;"
+          prop="content"
+          :rules="[{ required: true, message: '请输入发送内容', trigger: 'blur' },{ min: 10, max: 1000, message: '消息内容为10-1000个字符', trigger: 'blur' }]"
+        >
+          <el-input type="textarea" v-model="form.content" style="width: 40%" :maxlength="1000"
+                    :autosize="{minRows:12}" @change="changeContent"
                     placeholder="消息内容限10-1000个字符"></el-input>
           <span class="remainNum">{{remainNum}}/1000</span>
-        </el-form-item>
-        <el-form-item label="预览">
           <div class="carousel">
             <ul class="carousel-content">
               <span class="prev" @click="prevImg"></span>
@@ -208,13 +241,16 @@
                 <div class="text" :style="item.text">
                   <div class="title">楼咖App</div>
                   <div :style="item.content">{{form.content}}</div>
-                  <div v-if="curIndex===3" style="height: 12px;font-size: 12px;line-height: 12px;margin-top: 10px;">滑动来查看</div>
+                  <div v-if="curIndex===3"
+                       style="height: 12px;font-size: 12px;line-height: 12px;margin-top: 10px;">
+                    滑动来查看
+                  </div>
                 </div>
               </li>
             </ul>
           </div>
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-top: 20px;">
           <el-button type="primary" @click="sureSendNow(edit.type,true)">立即群发</el-button>
           <el-button @click="timingSend">定时发送</el-button>
         </el-form-item>
@@ -397,7 +433,7 @@
           isShowEdit: false,
           type: "post",//判断是编辑(put)还是新建(post)
           imgPosition: [{
-            label:"Android",
+            label: "Android",
             img: "0 0",
             text: {
               width: "212px",
@@ -408,10 +444,10 @@
               height: "13px",
               "line-height": "13px",
               overflow: "hidden",
-              color:"white",
+              color: "white",
             },
           }, {
-            label:"iOS Rolldown",
+            label: "iOS Rolldown",
             img: "-326px 0",
             text: {
               width: "227px",
@@ -422,10 +458,10 @@
               height: "24px",
               "line-height": "12px",
               overflow: "hidden",
-              color:"white",
+              color: "white",
             },
           }, {
-            label:"iOS Notification Center",
+            label: "iOS Notification Center",
             img: "2px -227px",
             text: {
               width: "216px",
@@ -436,10 +472,10 @@
               height: "24px",
               "line-height": "12px",
               overflow: "hidden",
-              color:"white",
+              color: "white",
             },
           }, {
-            label:"iOS Lock Screen",
+            label: "iOS Lock Screen",
             img: "-326px -227px",
             text: {
               width: "228px",
@@ -450,16 +486,17 @@
               height: "24px",
               "line-height": "12px",
               overflow: "hidden",
-              color:"white",
+              color: "white",
             },
           }],
         },
         form: {
-          sendType: "2",
+          sendType: "1",
           messageType: "1",
           targetType: "all",
           sendTarget: "all",
           loadingTime: "",
+          messageMould: "SMS_",
           checkedCommunity: [],
           sexLabelId: "",
           content: "",
@@ -561,7 +598,12 @@
               sendTarget: obj.goal.all ? "all" : "some",
               content: obj.content,
             });
-            this.changeContent(this.form.content);
+            if (obj.templateCode) {
+              this.form.messageMould = obj.templateCode;
+            }
+            if (obj.content) {
+              this.changeContent(this.form.content);
+            }
             if (obj.assignTime) {
               this.form.timing = obj.assignTime;
             }
@@ -768,11 +810,15 @@
           goal: {
             all: true,
           },
-          content: this.form.content,
           kind: this.form.messageType,
           userId: this.userId,
           way: this.form.sendType,
         };
+        if (this.form.sendType === '2') {
+          obj.templateCode = this.form.messageMould;
+        } else {
+          obj.content = this.form.content;
+        }
         if (type === "put") {
           obj.msgId = this.edit.editId;
         }
@@ -867,6 +913,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          console.log(id);
           this.$http.delete('http://' + global.URL + '/v1/message/push/' + id).then((res) => {
             if (res.body.code == 200 || res.body.code == 201) {
               this.$message({
@@ -888,6 +935,7 @@
           if (res.body.code === 200) {
             const arr = res.body.list || [];
             this.message_data = [];
+            this.page.total = res.body.total;
             arr.forEach(item => {
               this.message_data.push({
                 ...item,
@@ -913,9 +961,12 @@
 
 <style scoped>
   .carousel {
-    width: 100%;
+    display: inline-block;
+    width: 55%;
     height: 260px;
     border: 1px solid #ccc;
+    margin-left: 4%;
+    float: right;
   }
 
   .carousel-content > span {
@@ -925,6 +976,7 @@
     top: calc(50% - 40px);
     background-image: url("../../../assets/preview_arrow.png");
     background-repeat: no-repeat;
+    cursor: pointer;
   }
 
   .carousel-content > span.prev {
@@ -950,7 +1002,7 @@
 
   .carousel-content > li {
     display: none;
-    margin: 34px auto;
+    margin: 34px auto 0;
     height: 100%;
     width: 326px;
     position: relative;
@@ -962,24 +1014,27 @@
     position: absolute;
     font-size: 12px;
   }
-  .carousel-content .title{
+
+  .carousel-content .title {
     color: white;
     height: 13px;
-    line-height:13px;
+    line-height: 13px;
     font-weight: bold;
   }
-  .carousel-content .label{
+
+  .carousel-content .label {
     position: absolute;
     top: -35px;
     text-align: center;
     width: 100%;
   }
+
   .edit_show {
-    width: 800px;
+    width: 1100px;
     position: absolute;
     top: 50px;
     left: 50%;
-    margin-left: -400px;
+    margin-left: -550px;
     z-index: 1000;
   }
 
@@ -1128,7 +1183,7 @@
   .remainNum {
     position: absolute;
     bottom: 0;
-    left: 540px;
+    left: 340px;
   }
 
   .table_handle {

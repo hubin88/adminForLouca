@@ -24,7 +24,6 @@
         props:['action','onSuccess','onDelete','mId','img'],
         mounted(){
             var that = this;
-            console.log(this.action)
             $('#'+that.mId+'_unload_btn').on('click', function() {
                 var fd = new FormData();
                 fd.append("uploadFile", $('#'+that.mId+'_unload_file').get(0).files[0]);
@@ -35,7 +34,6 @@
                     contentType: false,
                     data: fd,
                     success: function(res) {
-                        console.log(res)
                         if(res.code == 200 || res.code == 201){
                             that.onSuccess(res.data,that.img)
                             that.img.push(res.data)

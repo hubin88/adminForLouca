@@ -4,15 +4,6 @@
       <!--      搜索      -->
       <el-tab-pane label="社区管理" name="社区管理">
         <div class="search_box">
-          <!--
-                              <el-select v-model="selectKey.tradingArea" clearable placeholder="选择商圈">
-                                  <el-option
-                                      v-for="item in selectScope.tradingArea"
-                                      :label="item.label"
-                                      :value="item.value">
-                                  </el-option>
-                              </el-select>
-          -->
           <div class="searchText">
             <el-input placeholder="搜索写字楼名称" v-model="selectKey.name"></el-input>
           </div>
@@ -50,7 +41,7 @@
               <th>动态数量</th>
               <th>经度</th>
               <th>纬度</th>
-              <!--<th>城市</th>-->
+              <th>所在商圈</th>
               <th>操作</th>
             </tr>
             </thead>
@@ -68,7 +59,7 @@
               <td>{{item.dynamics.total}}</td>
               <td>{{item.longitude}}</td>
               <td>{{item.latitude}}</td>
-              <!--<td>{{item.city}}</td>-->
+              <td>{{item.tradingArea}}</td>
               <td class="operation">
                 <!--                                    <a href="javascript:void(0)">查看</a>-->
                 <a href="javascript:void(0)" @click="showEditNow(item.id)"
@@ -107,7 +98,9 @@
 
         <el-dialog title="创建社区" v-model="showCreate" top="20px" @close="resetMap()">
           <div style="margin-top: -20px;">
-            <el-tooltip class="item" effect="dark" content="点击地图选择地址，然后点击一次右边的文本框使其获得焦点，之后按下回车键在出现的选项中用鼠标选择地点" placement="right">
+            <el-tooltip class="item" effect="dark"
+                        content="点击地图选择地址，然后点击一次右边的文本框使其获得焦点，之后按下回车键在出现的选项中用鼠标选择地点"
+                        placement="right">
               <i class="icon el-icon-information"></i>
             </el-tooltip>
           </div>
@@ -139,7 +132,9 @@
 
         <el-dialog title="编辑社区" v-model="showEdit" top="20px">
           <div style="margin-top: -20px;">
-            <el-tooltip class="item" effect="dark" content="点击地图选择地址，然后点击一次右边的文本框使其获得焦点，之后按下回车键在出现的选项中用鼠标选择地点" placement="right">
+            <el-tooltip class="item" effect="dark"
+                        content="点击地图选择地址，然后点击一次右边的文本框使其获得焦点，之后按下回车键在出现的选项中用鼠标选择地点"
+                        placement="right">
               <i class="icon el-icon-information"></i>
             </el-tooltip>
           </div>
@@ -183,13 +178,12 @@
           currentPage: 1,
           pageSizes: [10, 20, 50, 100, 200, 500, 1000],
           pageSize: 10,
-          total: 100
+          total: 10
         },
         isIndeterminate: false,
         isCheckedAll: false,
         checked: [],
         selectKey: {
-          tradingArea: '',
           content: '',
         },
         add: {
@@ -210,9 +204,6 @@
           name: "",
           longitude: "",
           latitude: ""
-        },
-        selectScope: {
-          tradingArea: []
         },
         data: [],
         action: '',
@@ -238,7 +229,7 @@
             },
             longitude: arr[i].longitude,
             latitude: arr[i].latitude,
-            city: arr[i].city,
+            tradingArea: arr[i].circle ? arr[i].circle.name : '',
             isChecked: false,
           }
           that.data.push(o)
@@ -274,7 +265,7 @@
       },
       creatCommity(){
         this.showCreate = true;
-        window.addressName="";
+        window.addressName = "";
         try {
           window.mapFrame.location.reload();
         } catch (e) {}
@@ -331,7 +322,7 @@
               },
               longitude: arr[i].longitude,
               latitude: arr[i].latitude,
-              city: arr[i].city,
+              tradingArea: arr[i].circle ? arr[i].circle.name : '',
               isChecked: false,
             }
             that.data.push(o);
@@ -509,7 +500,8 @@
     color: #20a0ff;
     padding: 0 2px;
   }
-  .icon{
+
+  .icon {
     display: inline-block;
     width: 20px;
     height: 25px;

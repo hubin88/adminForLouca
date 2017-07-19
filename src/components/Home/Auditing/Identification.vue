@@ -61,8 +61,11 @@
                                 </th>
                                 <th>昵称</th>
                                 <th>写字楼</th>
+                                <th>公司</th>
+                                <th>职位</th>
                                 <th>类型</th>
                                 <th>状态</th>
+                                <th>是否大咖</th>
                                 <th>时间</th>
                                 <th>操作</th>
                             </tr>
@@ -78,11 +81,15 @@
                                 </td>
                                 <td>{{item.nickname}}</td>
                                 <td>{{item.officeBuilding}}</td>
+                                <td></td>
+                                <td></td>
                                 <td>{{item.type}}</td>
                                 <td>{{item.state}}</td>
+                                <td></td>
                                 <td>{{item.time}}</td>
                                 <td class="operation">
                                     <a href="javascript:void(0)" @click="showDetailNow(item.id)">查看</a>
+                                    <a href="javascript:void(0)" @click="">设为大咖</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -274,7 +281,6 @@ export default {
     mounted: function(){
         var that = this;
         this.$http.get('http://'+ global.URL +'/v1/user/apply/certification?page='+ that.page.currentPage+'&limit='+ that.page.pageSize).then((response) => {
-            console.log(response)
             var arr = response.body.list;
             var TYPE = ['0','上传资料','邀请好友'];
             var STATE = ['放弃','进行中','通过','error','失败']
@@ -339,9 +345,7 @@ export default {
                 parameter += '&state=' + str;
             }
 
-            console.log(parameter)
             this.$http.get('http://'+ global.URL +'/v1/user/apply/certification?page='+ that.page.currentPage+'&limit='+ that.page.pageSize + parameter).then((response) => {
-            console.log(response)
             var arr = response.body.list||[];
             var TYPE = ['0','上传资料','邀请好友'];
             var STATE = ['放弃','进行中','通过','error','失败']
@@ -374,7 +378,6 @@ export default {
         checkAll:function(isChecked){
             this.checked = [];
             if(isChecked){
-                console.log('aaa')
                 for(let i = 0; i < this.data.length; i++){
                     this.data[i].isChecked = true;
                     this.checked.push(this.data[i].id)
@@ -406,13 +409,11 @@ export default {
             }else{
                 this.isIndeterminate = true;
             }
-            console.log(this.checked)
         },
         showDetailNow(o){
             this.showDetail = true;
             this.deal.id = o;
             this.$http.get('http://'+ global.URL +'/v1/user/certification/'+ o +'/info').then((res) => {
-                console.log(res);
                 if(res.body.code == 200 || res.body.code == 201){
                     this.detail = res.body.data;
                 }else{
@@ -422,7 +423,6 @@ export default {
         },
         certification(state){
             var user = JSON.parse(window.sessionStorage.getItem('loginLoucaUser')).userId;
-
             if(state == "2"){
                 var o = {
                   "applyId": this.deal.id,

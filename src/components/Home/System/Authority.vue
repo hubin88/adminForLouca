@@ -522,45 +522,41 @@
         this.$http.put('http://' + global.URL + '/v1/permission', obj).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             this.authorityList = [];
+            this.$message({
+              type: 'success',
+              message: '更新成功'
+            });
             this.$http.get('http://' + global.URL + '/v1/permission/list').then((res) => {
               if (res.body.code == 200) {
-                this.$message({
-                  type: 'success',
-                  message: '更新成功'
-                });
                 this.resetEditAuthority();
-                this.$http.get('http://' + global.URL + '/v1/permission/list').then((res) => {
-                  if (res.body.code == 200) {
-                    const arr = res.body.list || [];
-                    arr.forEach(item => {
-                      if (item.parentId === 0) {
-                        this.authorityList.push({
+                const arr = res.body.list || [];
+                arr.forEach(item => {
+                  if (item.parentId === 0) {
+                    this.authorityList.push({
+                      id: item.privilegeId,
+                      label: item.name,
+                      symbol: item.symbol,
+                      remark:item.remark,
+                      parentId: item.parentId,
+                      isCheck: false,
+                      children: [],
+                      isShowChildren: false,
+                      hasChildren: false,
+                    });
+                  }
+                });
+                arr.forEach(item => {
+                  if (item.parentId > 0) {
+                    this.authorityList.forEach(val => {
+                      if (val.id === item.parentId) {
+                        Object.assign(val, { isShowChildren: false, hasChildren: true });
+                        val.children.push({
                           id: item.privilegeId,
                           label: item.name,
                           symbol: item.symbol,
                           remark:item.remark,
                           parentId: item.parentId,
                           isCheck: false,
-                          children: [],
-                          isShowChildren: false,
-                          hasChildren: false,
-                        });
-                      }
-                    });
-                    arr.forEach(item => {
-                      if (item.parentId > 0) {
-                        this.authorityList.forEach(val => {
-                          if (val.id === item.parentId) {
-                            Object.assign(val, { isShowChildren: false, hasChildren: true });
-                            val.children.push({
-                              id: item.privilegeId,
-                              label: item.name,
-                              symbol: item.symbol,
-                              remark:item.remark,
-                              parentId: item.parentId,
-                              isCheck: false,
-                            });
-                          }
                         });
                       }
                     });

@@ -120,14 +120,7 @@
               <div class="issue_list_label">标签</div>
               <div class="issue_list_content">
                 <div class="issuer">
-                  <el-select v-model="issue.label" clearable placeholder="请选择标签">
-                    <el-option
-                      v-for="item in selectKey.labels"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
+                  <span style="font-size: 16px">爱生活</span>
                 </div>
               </div>
               <div class="clear"></div>
@@ -569,7 +562,6 @@
           issuers: [],
           groupId: '',
           createTime: '',
-          labels: [],
           label: '',
           selectUser: '',
           users: [],
@@ -581,42 +573,9 @@
         selectScope: {
           area: [],
           group: [],
-          officeBuilding: [
-            {
-              value: '选项1',
-              label: '吃饭'
-            }, {
-              value: '选项2',
-              label: '喝水'
-            }, {
-              value: '选项3',
-              label: '跑步'
-            }
-          ],
-          label: [
-            {
-              value: '选项1',
-              label: '吃饭'
-            }, {
-              value: '选项2',
-              label: '喝水'
-            }, {
-              value: '选项3',
-              label: '跑步'
-            }
-          ],
-          isVest: [
-            {
-              value: '选项1',
-              label: '吃饭'
-            }, {
-              value: '选项2',
-              label: '喝水'
-            }, {
-              value: '选项3',
-              label: '跑步'
-            }
-          ],
+          officeBuilding: [],
+          label: [],
+          isVest: [],
           pickerOptions: {
             shortcuts: [{
               text: '最近一周',
@@ -739,17 +698,6 @@
               label: res.body.list[i].name,
               children: [],
             });
-          }
-        }
-      });
-      this.$http.get('http://' + global.URL + '/v1/tag/newsletter/list').then((res) => {
-        if (res.body.code == 200 || res.body.code == 201) {
-          for (let i = 0; i < res.body.list.length; i++) {
-            let o = {
-              value: res.body.list[i].tagId,
-              label: res.body.list[i].name,
-            }
-            this.selectKey.labels.push(o);
           }
         }
       });
@@ -1239,11 +1187,11 @@
           "groupId": this.addIssueOptions.groupId[1],
           "photo": this.issue.img,
           "sign": "0",
-          "tag": this.issue.label,
+          "tag": '1020',
           "userId": this.issue.issuer
         }
         this.$http.post('http://' + global.URL + '/v1/newsletter', o).then((res) => {
-          if (res.body.code == 200) {
+          if (res.body.code == 200||res.body.code==201) {
             this.$message('发布成功');
             this.issueVisible = false;
             this.resetData();
