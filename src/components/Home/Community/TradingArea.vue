@@ -40,6 +40,7 @@
               <th>成员数量</th>
               <th>社区数量</th>
               <th>城市</th>
+              <th>客服</th>
               <th>操作</th>
             </tr>
             </thead>
@@ -56,11 +57,14 @@
               <td>{{item.members.total}}</td>
               <td>{{item.community.total}}</td>
               <td>{{item.city}}</td>
+              <td>{{item.customName}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showEditNow(item.id)"
                    v-if="hasPrivileges('circle_edit')">编辑</a>
                 <a href="javascript:void(0)" @click="deleteArea(item.id)"
                    v-if="hasPrivileges('circle_manage')">删除</a>
+                <a href="javascript:void(0)" @click="addServer(item.id)"
+                   v-if="hasPrivileges('circle_manage')">{{item.customName ? '变更客服' : '添加客服'}} </a>
               </td>
             </tr>
             </tbody>
@@ -77,6 +81,29 @@
             </el-pagination>
           </div>
         </div>
+        <el-dialog title="设置商圈客服" v-model="service.showService" size="tiny">
+          <el-select
+            v-model="service.organiser"
+            filterable
+            remote
+            clearable
+            placeholder="请输入客服昵称"
+            :remote-method="remoteMethodService"
+            :loading="loading"
+            style="width: 160px"
+          >
+            <el-option
+              v-for="item in service.organisers"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="service.showService = false">取 消</el-button>
+            <el-button type="primary" @click="sureAddservice">确 定</el-button>
+          </span>
+        </el-dialog>
 
         <!--      创建商圈      -->
         <el-dialog title="创建商圈" v-model="showCreate">
@@ -219,7 +246,7 @@
 <script>
   export default {
     name: 'tradingArea',
-    data () {
+    data() {
       return {
         activeName: '全部商圈',
         page: {
@@ -236,6 +263,12 @@
         selectKey: {
           city: '',
           content: '',
+        },
+        service: {
+          showService: false,
+          organisers: [],
+          organiser: '',
+          tradingAreaId: '',
         },
         selectScope: {
           city: [{
@@ -290,6 +323,7 @@
               community: {
                 total: arr[i].groupNum
               },
+              customName: arr[i].customName,
               city: '深圳',
               isChecked: false,
             }
@@ -317,7 +351,47 @@
       })()
     },
     methods: {
-      remoteMethod(name){
+      addServer(id) {
+        this.service.organisers = [];
+        this.service.organiser = '';
+        this.service.showService = true;
+        this.service.tradingAreaId = id;
+      },
+      remoteMethodService(name) {
+        this.service.organisers = [];
+        if (name !== '') {
+          this.loading = true;
+          setTimeout(() => {
+            this.loading = false;
+            this.$http.get('http://' + global.URL + '/v1/user/find?name=' + name).then((res) => {
+              if (res.body.code == 200 || res.body.code == 201) {
+                let arr = res.body.list || [];
+                arr.forEach((item) => {
+                  this.service.organisers.push({
+                    value: item.userId,
+                    label: item.name,
+                  })
+                });
+              }
+            })
+          }, 500);
+        }
+      },
+      sureAddservice() {
+        const obj = {
+          regionId: this.service.tradingAreaId,
+          userId: this.service.organiser,
+        };
+        this.$http.post('http://' + global.URL + '/v1/region/custom/', obj).then((res) => {
+          if (res.body.code == 200) {
+            this.service.showService = false;
+            this.resetData();
+          }else{
+            this.$message.error(res.body.message);
+          }
+        });
+      },
+      remoteMethod(name) {
         this.edit.communitys = [];
         if (name !== '') {
           this.loading = true;
@@ -327,7 +401,7 @@
           }, 500);
         }
       },
-      resetData(){
+      resetData() {
         this.data = [];
         this.checked = [];
         this.isIndeterminate = false;
@@ -354,6 +428,7 @@
                 community: {
                   total: arr[i].groupNum
                 },
+                customName: arr[i].customName,
                 city: '深圳',
                 isChecked: false,
               }
@@ -371,7 +446,7 @@
         this.page.currentPage = val;
         this.resetData()
       },
-      checkAll(isChecked){
+      checkAll(isChecked) {
         this.checked = [];
         if (isChecked) {
           for (let i = 0; i < this.data.length; i++) {
@@ -386,7 +461,7 @@
         this.isIndeterminate = false;
 
       },
-      checkOne(isChecked, id){
+      checkOne(isChecked, id) {
         if (isChecked) {
           this.checked.push(id)
         } else {
@@ -406,7 +481,7 @@
           this.isIndeterminate = true;
         }
       },
-      createNow(){
+      createNow() {
         var o = {
           "fullName": this.create.fullName,
           "introduce": this.create.introduce,
@@ -423,8 +498,8 @@
         })
         this.showCreate = false;
       },
-      deleteArea(o){
-        this.checked = []
+      deleteArea(o) {
+        this.checked = [];
         if (typeof o == 'object' && o.length > 0) {
           this.checked = o
           this.showDelete = true
@@ -433,10 +508,10 @@
           this.showDelete = true
         }
       },
-      cancelDelete(){
+      cancelDelete() {
         this.resetData();
       },
-      confirmDelete(id){
+      confirmDelete(id) {
         var obj = {
           "regionIds": id,
           "state": "7"
@@ -451,7 +526,7 @@
           }
         })
       },
-      getCommunity(){
+      getCommunity() {
         this.edit.options = [];
         this.$http.get('http://' + global.URL + '/v1/group/list?page=1&limit=999999999').then(res => {
           if (res.body.code == 200 || res.body.code == 201) {
@@ -462,10 +537,12 @@
                 label: val.name,
               });
             });
+          }else{
+            this.$message.error(res.body.message);
           }
         });
       },
-      showEditNow(o){
+      showEditNow(o) {
         this.showEdit = true;
         this.edit.id = o;
         this.getCommunity();
@@ -476,6 +553,8 @@
             this.edit.name = res.body.data.name;
             this.edit.pinyin = res.body.data.pinyin;
             this.edit.state = res.body.data.state + '';
+          }else{
+            this.$message.error(res.body.message);
           }
         });
         this.$http.get('http://' + global.URL + '/v1/region/' + o + '/group').then((res) => {
@@ -486,7 +565,7 @@
           }
         })
       },
-      editNow(){
+      editNow() {
         var o = {
           fullName: this.edit.fullName,
           introduce: this.edit.introduce,
@@ -494,7 +573,7 @@
           pinyin: this.edit.pinyin,
           state: this.edit.state,
           regionId: this.edit.id,
-        }
+        };
         this.$http.put('http://' + global.URL + '/v1/region/', o).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('操作成功');
@@ -505,7 +584,7 @@
           }
         })
       },
-      removeGroup(rid, gid){
+      removeGroup(rid, gid) {
         var o = {
           groupIds: [gid],
           regionId: rid
@@ -518,8 +597,8 @@
             this.$http.get('http://' + global.URL + '/v1/region/' + rid + '/group').then((res) => {
               if (res.body.code == 200 || res.body.code == 201) {
                 this.edit.group = res.body.list;
-              }else{
-                this.edit.group=[];
+              } else {
+                this.edit.group = [];
               }
             });
           } else {
@@ -527,7 +606,7 @@
           }
         })
       },
-      addGroup(rid, gid){
+      addGroup(rid, gid) {
         var o = {
           groupIds: gid,
           regionId: rid
@@ -536,8 +615,8 @@
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('操作成功');
             this.edit.options = [];
-            this.edit.communitys=[];
-            this.edit.addId=[];
+            this.edit.communitys = [];
+            this.edit.addId = [];
             this.getCommunity();
             this.$http.get('http://' + global.URL + '/v1/region/' + rid + '/group').then((res) => {
               if (res.body.code == 200 || res.body.code == 201) {

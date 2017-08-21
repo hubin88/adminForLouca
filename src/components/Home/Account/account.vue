@@ -125,6 +125,8 @@
           if (res.body.code === 200) {
             this.account_data = res.body.list || [];
             this.page.total = res.body.total;
+          }else{
+            this.$message.error(res.body.message);
           }
         });
       }

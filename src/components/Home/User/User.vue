@@ -3,7 +3,6 @@
     <el-tabs v-model="activeName">
       <!--      全部用户      -->
       <el-tab-pane label="全部用户" name="全部用户">
-
         <!--        详情页        -->
         <el-card class="box-card" v-show="showUserDetail">
           <div slot="header" class="detail_header">
@@ -43,6 +42,10 @@
               </div>
               <div class="info_body">
                 <ul>
+                  <li class="info_list">
+                    <span class="list_title">是否禁用</span>
+                    <span>{{userDetail.status===0?"是":"否"}}</span>
+                  </li>
                   <li class="info_list">
                     <span class="list_title">标签</span>
                     <template v-if="userDetail.tags">
@@ -107,19 +110,25 @@
             </div>
           </div>
         </el-card>
-
         <!--        更改社区        -->
         <el-dialog title="更改社区" v-model="showEditGroup" size="tiny">
           <el-form :model="editGroup">
             <el-form-item label="社区" label-width="60px">
-              <el-cascader
-                v-model="editGroup.groupId"
-                :options="this.addUserOptions.groups"
-                :show-all-levels="false"
-                clearable
-                @active-item-change="handleItemChangeGroups"
-                placeholder="请选择社区"
-              ></el-cascader>
+              <el-select v-model="editGroup.area" clearable placeholder="选择商圈" @change="selectArea"
+                         style="width:150px">
+                <el-option
+                  v-for="item in addUserOptions.groups"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+              <el-select v-model="editGroup.groupId" filterable clearable placeholder="选择社区" style="width:150px;">
+                <el-option
+                  v-for="item in selectScope.group"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
             </el-form-item>
             <el-form-item label="楼层" label-width="60px">
               <el-input-number v-model="editGroup.floor" :min="-100" :max="1000"></el-input-number>
@@ -127,7 +136,7 @@
           </el-form>
           <div slot="footer" class="dialog-footer">
             <el-button @click="showEditGroup = false">取 消</el-button>
-            <el-button type="primary" @click="editGroupNow()">确 定</el-button>
+            <el-button type="primary" @click="editGroupNow">确 定</el-button>
           </div>
         </el-dialog>
 
@@ -155,24 +164,29 @@
               <div style="position:relative">
                 <el-date-picker
                   v-model="addUser.birthday"
-                  type="datetime"
+                  type="date"
                   align="right"
-                  placeholder="发布时间"
-                  :picker-options="selectScope.pickerOptions">
+                  clearable
+                  placeholder="选择日期">
                 </el-date-picker>
               </div>
-
             </el-form-item>
             <el-form-item label="社群" label-width="60px">
-              <el-cascader
-                clearable
-                v-model="addUserOptions.groupId"
-                :options="addUserOptions.groups"
-                :show-all-levels="false"
-                @active-item-change="handleItemChangeGroups"
-                placeholder="请选择社区"
-              ></el-cascader>
-              <!--<el-input style="width:240px;" v-model="addUser.groupId" placeholder="请输入社区Id"></el-input>-->
+              <el-select v-model="addUserOptions.area" clearable placeholder="选择商圈" @change="selectArea"
+                         style="width:150px">
+                <el-option
+                  v-for="item in selectScope.area"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+              <el-select v-model="addUserOptions.groupId" filterable clearable placeholder="选择社区" style="width:150px;">
+                <el-option
+                  v-for="item in selectScope.group"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
             </el-form-item>
             <el-form-item label="楼层" label-width="60px">
               <el-input-number v-model="addUser.floor" :min="1" :max="1000"></el-input-number>
@@ -190,7 +204,7 @@
         </el-dialog>
 
         <div class="search_box">
-          <el-select v-model="selectKey.area" multiple placeholder="选择商圈" @change="selectArea"
+          <el-select v-model="selectKey.area" clearable placeholder="选择商圈" @change="selectArea"
                      style="width:150px">
             <el-option
               v-for="item in selectScope.area"
@@ -198,7 +212,7 @@
               :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-model="selectKey.group" multiple placeholder="选择社区" style="width:150px;">
+          <el-select v-model="selectKey.group" filterable clearable placeholder="选择社区" style="width:150px;">
             <el-option
               v-for="item in selectScope.group"
               :label="item.label"
@@ -246,6 +260,33 @@
                      v-if="hasPrivileges('user_add')">添加用户
           </el-button>
         </div>
+        <!--禁言-->
+        <el-dialog title="禁言" v-model="gag.showGag" size="tiny">
+          <el-form v-model="gag" label-width="160px">
+            <el-form-item label="被禁级别">
+              <el-select v-model="gag.level" placeholder="请选被禁级别">
+                <el-option label="禁发布" value="1"></el-option>
+                <el-option label="禁发布和发言" value="2"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="被禁原因">
+              <el-input type="textarea" v-model="gag.reason"></el-input>
+            </el-form-item>
+            <el-form-item label="被禁起止时间">
+              <el-date-picker
+                v-model="gag.time"
+                type="datetimerange"
+                align="right"
+                placeholder="选择时间范围"
+                :picker-options="gag.pickerOptions">
+              </el-date-picker>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="sureGag">确定</el-button>
+              <el-button @click="gag.showGag=false">取消</el-button>
+            </el-form-item>
+          </el-form>
+        </el-dialog>
 
         <!--        列表区        -->
         <div class="table_box">
@@ -280,7 +321,7 @@
               </td>
               <td>{{item.user.name}}<br>{{item.tel}}</td>
               <td>{{item.community.name}}</td>
-              <td>{{item.state}}</td>
+              <td>{{YN[item.state]}}</td>
               <td>{{item.newsletter.num}}</td>
               <td>{{item.comment.num}}</td>
               <td>{{item.fans.num}}</td>
@@ -289,12 +330,12 @@
               <td>{{item.lastTime}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showUser(item.id)">查看</a>
-                <a href="javascript:void(0)" @click="changeGroup(item.id)"
-                   v-if="hasPrivileges('user_manage')">切换社区</a>
-                <a href="javascript:void(0)" v-if="hasPrivileges('user_manage')"
-                   v-show="hasPrivileges('user_manage')">禁言</a>
-                <a href="javascript:void(0)" v-if="hasPrivileges('user_manage')"
-                   v-show="hasPrivileges('user_manage')">屏蔽</a>
+                <a href="javascript:void(0)" @click="changeGroup(item.id)" v-if="hasPrivileges('user_manage')">切换社区</a>
+                <a href="javascript:void(0)" @click="cancelAuthentication(item.id)"
+                   v-if="item.state&&hasPrivileges('user_manage')">取消认证</a>
+                <a href="javascript:void(0)" @click="showGag(item.id)" v-if="hasPrivileges('user_manage')">禁言</a>
+                <a href="javascript:void(0)" @click="disableUser(item.id)"
+                   v-if="item.status&&hasPrivileges('user_manage')">禁用</a>
               </td>
             </tr>
             </tbody>
@@ -312,17 +353,94 @@
           </div>
         </div>
       </el-tab-pane>
+      <el-tab-pane label="用户详情" name="用户详情">
+        <div class="search_box">
+          <el-input v-model="detail.searchContent" style="display: inline-block;width: 200px;"
+                    placeholder="姓名、昵称、公司、职位"></el-input>
+          <el-button type="primary" @click="searchDetail">搜索</el-button>
+        </div>
+        <el-table
+          class="table"
+          :data="detail.user_data"
+          border
+          style="width: 100%"
+        >
+          <el-table-column
+            prop="userId"
+            label="用户ID"
+          ></el-table-column>
+          <el-table-column
+            prop="realName"
+            label="姓名"
+          ></el-table-column>
+          <el-table-column
+            prop="name"
+            label="昵称"
+          ></el-table-column>
+          <el-table-column
+            prop="headPic"
+            label="头像"
+          >
+            <template scope="scope">
+              <img :src="scope.row.headPic" style="width: 50px;height: auto">
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="sex"
+            label="性别"
+          >
+            <template scope="scope">
+              {{scope.row.sex === 1 ? "男" : "女"}}
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="auth"
+            label="是否认证"
+          >
+            <template scope="scope">
+              {{scope.row.auth === 1 ? "是" : "否"}}
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="groupName"
+            label="社区"
+          ></el-table-column>
+          <el-table-column
+            prop="company"
+            label="公司"
+          ></el-table-column>
+          <el-table-column
+            prop="job"
+            label="职位"
+          ></el-table-column>
+        </el-table>
+        <div class="table_control">
+          <el-pagination
+            @size-change="handleSizeChangeDetail"
+            @current-change="handleCurrentChangeDetail"
+            :current-page="detail.page.currentPage"
+            :page-sizes="detail.page.pageSizes"
+            :page-size="detail.page.pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="detail.page.total">
+          </el-pagination>
+        </div>
+      </el-tab-pane>
     </el-tabs>
 
   </div>
 </template>
 
 <script>
+  import ElTabPane from '../../../../node_modules/element-ui/packages/tabs/src/tab-pane.vue';
 
   export default {
+    components: { ElTabPane },
     name: 'user',
-    data () {
+    data() {
       return {
+        handler: JSON.parse(window.sessionStorage.getItem('loginLoucaUser')).userId,
+        YN: ['否', '是'],
         sex: ['保密', '男', '女'],
         showUserDetail: false,
         showEditGroup: false,
@@ -336,8 +454,20 @@
         },
         editGroup: {
           floor: '',
-          groupId: [],
+          groupId: '',
+          groups:[],
           userId: '',
+          area:'',
+        },
+        detail: {
+          user_data: [],
+          searchContent: '',
+          page: {
+            pageSizes: [10, 20, 50, 100, 200, 500, 1000],
+            pageSize: 10,
+            currentPage: 1,
+            total: 400,
+          },
         },
         isIndeterminate: false,
         isCheckedAll: false,
@@ -351,6 +481,17 @@
           selectUser: '昵称',
           area: [],
           group: [],
+        },
+        gag: {
+          showGag: false,
+          id: '',
+          time: '',
+          level: '',
+          pickerOptions: {
+            disabledDate(value) {
+              return new Date().getTime() - value.getTime() > 3600 * 24 * 1000;
+            }
+          },
         },
         selectScope: {
           state: [{
@@ -394,8 +535,9 @@
         userDetail: '',
         addUserHeadPic: [],
         addUserOptions: {
-          groupId: [],
+          groupId: '',
           groups: [],
+          area:'',
         },
         addUser: {
           birthday: '',
@@ -413,45 +555,9 @@
     },
     props: ['privileges'],
     mounted: function () {
-      console.log(this.privileges);
       var that = this;
       this.action = 'http://' + global.URL + '/v1/file/upload?kind=2';
-      this.$http.get('http://' + global.URL + '/v1/user/list?limit=' + that.page.pageSize + '&page=' + that.page.currentPage).then((response) => {
-        var arr = response.body.list || [];
-        var YN = ['否', '是'];
-        that.page.total = response.body.total
-        for (let i = 0, length = arr.length; i < length; i++) {
-          var Uname = arr[i].name ? arr[i].name : '';
-          var Cname = arr[i].groupInfo ? arr[i].groupInfo.name : '';
-          let o = {
-            id: arr[i].userId,
-            tel: arr[i].phone,
-            user: {
-              name: Uname,
-            },
-            community: {
-              name: Cname
-            },
-            state: YN[arr[i].authentication],
-            newsletter: {
-              num: arr[i].newsletterNum
-            },
-            comment: {
-              num: arr[i].commentNum
-            },
-            fans: {
-              num: arr[i].fansNum
-            },
-            follow: {
-              num: arr[i].followNum
-            },
-            registerTime: arr[i].registerTime,
-            lastTime: arr[i].lastTime,
-            isChecked: false
-          }
-          that.data.push(o);
-        }
-      });
+      this.resetData();
 
       this.$http.get('http://' + global.URL + '/v1/region?page=1&limit=999').then((res) => {
         if (res.body.code == 200 || res.body.code == 201) {
@@ -489,44 +595,81 @@
         })
       })()
     },
-
     methods: {
-      handleItemChangeGroups(val){
-        let obj = this.addUserOptions.groups.filter((item) => item.value === val[0])[0];
-        obj.children = [];
-        this.$http.get('http://' + global.URL + '/v1/region/' + val[0] + '/group').then((res) => {
+      searchDetail() {
+        this.$http.get('http://' + global.URL + '/v1/user/index?content=' + this.detail.searchContent + '&page=' + this.detail.page.currentPage + '&limit=' + this.detail.page.pageSize).then((res) => {
+          if (res.body.code == 200) {
+            this.detail.user_data = res.body.list || [];
+            this.detail.page.total = res.body.total;
+          }
+        });
+      },
+      handleSizeChangeDetail(val) {
+        this.detail.page.pageSize = val;
+        this.searchDetail();
+      },
+      handleCurrentChangeDetail(val) {
+        this.detail.page.currentPage = val;
+        this.searchDetail();
+      },
+      disableUser(id) {
+        this.$http.delete('http://' + global.URL + '/v1/user/disable?user=' + id).then((res) => {
+          if (res.body.code == 200) {
+            this.$message("操作成功");
+            this.resetData();
+          }
+        });
+      },
+      showGag(id) {
+        this.gag.id = id;
+        this.gag.level = '';
+        this.gag.reason = '';
+        this.gag.time = '';
+        this.gag.showGag = true;
+      },
+      sureGag() {
+        const startTime = new Date(this.gag.time[0]).getTime() - new Date().getTime() > 60 * 1000 ? new Date(this.gag.time[0]).getTime() : new Date().getTime() + 60 * 1000;
+        const obj = {
+          endLockTime: this.formatTime(new Date(this.gag.time[1]).getTime()),
+          handler: this.handler,
+          level: this.gag.level,
+          reason: this.gag.reason,
+          startLockTime: this.formatTime(startTime),
+          userId: this.gag.id,
+        };
+        this.$http.post('http://' + global.URL + '/v1/user/locked', obj).then((res) => {
+          if (res.body.code == 201) {
+            this.$message("操作成功");
+            this.gag.showGag = false;
+            this.resetData();
+          }
+        });
+      },
+      cancelAuthentication(id) {
+        this.$http.put('http://' + global.URL + '/v1/user/certificated/' + id).then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            this.$message("取消认证");
+            this.resetData();
+          }
+        });
+      },
+      // 按商圈选择
+      selectArea(val) {
+        this.selectScope.group = [];
+        this.$http.get('http://' + global.URL + '/v1/region/' + val + '/group').then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             for (let i = 0; i < res.body.list.length; i++) {
               let o = {
                 value: res.body.list[i].groupId,
                 label: res.body.list[i].name
               }
-              obj.children.push(o);
+              this.selectScope.group.push(o);
             }
           }
         })
       },
-      // 按商圈选择
-      selectArea(){
-        console.log(this.selectKey.area);
-        this.selectScope.group = [];
-        for (let i = 0; i < this.selectKey.area.length; i++) {
-          this.$http.get('http://' + global.URL + '/v1/region/' + this.selectKey.area[i] + '/group').then((res) => {
-            if (res.body.code == 200 || res.body.code == 201) {
-              for (let i = 0; i < res.body.list.length; i++) {
-                let o = {
-                  value: res.body.list[i].groupId,
-                  label: res.body.list[i].name
-                }
-                this.selectScope.group.push(o);
-              }
-            }
-          })
-        }
-
-      },
       // 搜索函数
-      searchNow(){
+      searchNow() {
         var that = this;
         if (this.selectKey.userKey) {
           var searchTel = function () {
@@ -581,15 +724,7 @@
           this.resetData()
         }
       },
-      // 权限判断函数
-//        hasPrivileges(name){
-//            return this.privileges.some(function(currentValue,index,arr){
-//                if(currentValue == name){
-//                    return true
-//                }
-//            })
-//        },
-      resetData(){
+      resetData() {
         this.data = [];
         this.checked = [];
         this.isIndeterminate = false;
@@ -638,12 +773,9 @@
 
           parameter += '&groupId=' + strArr.join(',');
         }
-
-        console.log(parameter)
-
+        ;
         this.$http.get('http://' + global.URL + '/v1/user/list?limit=' + that.page.pageSize + '&page=' + that.page.currentPage + parameter).then((response) => {
           var arr = response.body.list || [];
-          var YN = ['否', '是']
           that.page.total = response.body.total;
           console.log(response)
           for (let i = 0, length = arr.length; i < length; i++) {
@@ -658,7 +790,7 @@
               community: {
                 name: Cname
               },
-              state: YN[arr[i].authentication],
+              state: arr[i].authentication,
               newsletter: {
                 num: arr[i].newsletterNum
               },
@@ -673,7 +805,8 @@
               },
               registerTime: arr[i].registerTime,
               lastTime: arr[i].lastTime,
-              isChecked: false
+              isChecked: false,
+              status: arr[i].status,
             }
             that.data.push(o);
           }
@@ -687,7 +820,7 @@
         this.page.currentPage = val;
         this.resetData();
       },
-      checkAll(isChecked){
+      checkAll(isChecked) {
         this.checked = [];
         if (isChecked) {
           for (let i = 0; i < this.data.length; i++) {
@@ -702,7 +835,7 @@
         this.isIndeterminate = false;
 
       },
-      checkOne(isChecked, id){
+      checkOne(isChecked, id) {
         if (isChecked) {
           this.checked.push(id)
         } else {
@@ -723,7 +856,7 @@
         }
         console.log(this.checked)
       },
-      showUser(o){
+      showUser(o) {
         this.showUserDetail = true;
         this.$http.get('http://' + global.URL + '/v1/user/' + o + '/detail').then((res) => {
           console.log(res);
@@ -736,17 +869,16 @@
 
         });
       },
-      changeGroup(o){
+      changeGroup(o) {
         this.editGroup.userId = o;
         this.showEditGroup = true;
       },
-      editGroupNow(){
-        const obj={
+      editGroupNow() {
+        const obj = {
           floor: this.editGroup.floor,
-          groupId: this.editGroup.groupId[1],
+          groupId: this.editGroup.groupId,
           userId: this.editGroup.userId,
         };
-        console.log(obj);
         this.$http.put('http://' + global.URL + '/v1/user/switch/group', obj).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message(res.body.data)
@@ -757,23 +889,7 @@
         })
         this.showEditGroup = false;
       },
-      // 禁用用户
-      forbidNow(o){
-        if (typeof o == 'object') {
-          o = o.join(',')
-        } else if (typeof o == 'number') {
-          o = o.toString();
-        }
-        console.log(o)
-        this.$http.delete('http://' + global.URL + '/v1/newsletter/?ids=' + o).then((res) => {
-          console.log(res)
-          if (res.body.code == 200) {
-            this.resetData();
-            this.$message('操作成功');
-          }
-        })
-      },
-      addUserNow(){
+      addUserNow() {
         if (Boolean(this.addUser.birthday)) {
           let sDate = new Date(this.addUser.birthday);
           let sYear = sDate.getFullYear();
@@ -785,11 +901,9 @@
           var sStr = sYear + '-' + sMonth + '-' + sDay + ' ' + sHours + ':' + sMinutes + ':' + sSeconds;
           this.addUser.birthday = sStr;
         }
-        let o = { ...this.addUser, groupId: this.addUserOptions.groupId.pop() };
-        console.log(o)
+        let o = { ...this.addUser, groupId: this.addUserOptions.groupId };
         this.addUser.headPic = this.addUserHeadPic[0];
         this.$http.post('http://' + global.URL + '/v1/user', o).then((res) => {
-          console.log(res);
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('操作成功')
             this.showAddUser = false;
@@ -799,15 +913,24 @@
           }
         })
       },
-      successUnload(img, arr){
+      successUnload(img, arr) {
         console.log(arr)
         this.addUserHeadPic = arr;
       },
-      deleteUnload(img, arr){
-        console.log(arr)
+      deleteUnload(img, arr) {
         this.addUserHeadPic = arr;
       },
-
+      formatTime(time) {
+        let sDate = new Date(time);
+        let sYear = sDate.getFullYear();
+        let sMonth = sDate.getMonth() + 1;
+        let sDay = sDate.getDate();
+        let sHours = sDate.getHours();
+        let sMinutes = sDate.getMinutes();
+        let sSeconds = sDate.getSeconds();
+        var str = sYear + '-' + sMonth + '-' + sDay + ' ' + sHours + ':' + sMinutes + ':' + sSeconds;
+        return str;
+      }
     }
   }
 </script>

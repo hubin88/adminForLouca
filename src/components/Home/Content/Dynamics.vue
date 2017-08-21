@@ -14,7 +14,7 @@
             off-text="推荐"
             @change="resetData">
           </el-switch>
-          <el-select v-model="selectKey.area" multiple placeholder="选择商圈" @change="selectArea"
+          <el-select v-model="selectKey.area" clearable placeholder="选择商圈" @change="selectArea"
                      style="width:160px">
             <el-option
               v-for="item in selectScope.area"
@@ -22,7 +22,7 @@
               :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-model="selectKey.group" multiple placeholder="选择社区" style="width:160px;">
+          <el-select v-model="selectKey.group" filterable clearable placeholder="选择社区" style="width:160px;">
             <el-option
               v-for="item in selectScope.group"
               :label="item.label"
@@ -128,16 +128,21 @@
             <div class="issue_list_box">
               <div class="issue_list_label">社区</div>
               <div class="issue_list_content">
-                <div class="issuer">
-                  <el-cascader
-                    v-model="addIssueOptions.groupId"
-                    :options="addIssueOptions.groups"
-                    :show-all-levels="false"
-                    clearable
-                    @active-item-change="handleItemChangeGroups"
-                    @change="selectGroup"
-                    placeholder="请选择社区"
-                  ></el-cascader>
+                <div class="issuer" style="width: auto">
+                  <el-select v-model="addIssueOptions.area" clearable placeholder="选择商圈" @change="addIssueOptionsSelectArea">
+                    <el-option
+                      v-for="item in selectScope.area"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                  <el-select v-model="addIssueOptions.groupId" filterable clearable placeholder="选择社区" @change="addIssueOptionsSelectGroup">
+                    <el-option
+                      v-for="item in addIssueOptions.groups"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
                 </div>
               </div>
               <div class="clear"></div>
@@ -146,23 +151,12 @@
               <div class="issue_list_label">发布人</div>
               <div class="issue_list_content">
                 <div class="issuer">
-                  <el-select
+                  <el-autocomplete
                     v-model="issue.issuer"
-                    filterable
-                    remote
-                    clearable
+                    :fetch-suggestions="querySearchAsync"
                     placeholder="请输入发起人"
-                    :remote-method="remoteMethodIssuer"
-                    :loading="loading"
-                    style="width: 160px"
-                  >
-                    <el-option
-                      v-for="item in selectKey.filterUsers"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
+                    @select="handleSelect"
+                  ></el-autocomplete>
                 </div>
               </div>
               <div class="clear"></div>
@@ -254,16 +248,21 @@
             <div class="issue_list_box">
               <div class="issue_list_label">社区</div>
               <div class="issue_list_content">
-                <div class="issuer">
-                  <el-cascader
-                    v-model="interaction.groupId"
-                    :options="interaction.groups"
-                    :show-all-levels="false"
-                    clearable
-                    @active-item-change="interactionChangeGroups"
-                    @change="interactionSelectGroup"
-                    placeholder="请选择社区"
-                  ></el-cascader>
+                <div class="issuer" style="width: auto">
+                  <el-select v-model="interaction.area" clearable placeholder="选择商圈" @change="interactionSelectArea">
+                    <el-option
+                      v-for="item in selectScope.area"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                  <el-select v-model="interaction.groupId" filterable clearable placeholder="选择社区" @change="interactionSelectGroup">
+                    <el-option
+                      v-for="item in interaction.groups"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
                 </div>
               </div>
               <div class="clear"></div>
@@ -271,14 +270,12 @@
             <div class="issue_list_box">
               <div class="issue_list_label">选择账户</div>
               <div class="issue_list_content">
-                <el-select v-model="interaction.userId" placeholder="请输入账户">
-                  <el-option
-                    v-for="item in interaction.users"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
-                </el-select>
+                <el-autocomplete
+                  v-model="interaction.user"
+                  :fetch-suggestions="querySearchAsyncUser"
+                  placeholder="请输入账户"
+                  @select="handleSelectUser"
+                ></el-autocomplete>
               </div>
               <div class="clear"></div>
             </div>
@@ -403,7 +400,6 @@
               <td>{{item.time.create}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showDynamic(item.id)">查看</a>
-                <!--                                    <a href="javascript:void(0)" @click="showChangeLabelNow(item.id)">标签</a>-->
                 <a href="javascript:void(0)"
                    @click="showRecommend=true;recommend.singlo=item.id" v-if="hasPrivileges('newsletter_manage')">推荐</a>
                 <a href="javascript:void(0)" @click="deleteNews(item.id)" v-if="hasPrivileges('newsletter_manage')">删除</a>
@@ -509,6 +505,7 @@
         action: '',
         loading: false,
         activeName: 'first',
+        timeout:null,
         page: {
           currentPage: 1,
           pageSizes: [10, 20, 50, 100, 200, 500, 1000],
@@ -528,8 +525,9 @@
         showEdit: false,
         swtichRe: false,
         addIssueOptions: {
-          groupId: [],
+          groupId: '',
           groups: [],
+          area:'',
         },
 
         issue: {
@@ -537,6 +535,7 @@
           url: '',
           label: '',
           issuer: '',
+          userId:'',
           img: [],
           groupId: '',
         },
@@ -613,8 +612,10 @@
           messageContent: '',
           account: '',
           groups: [],
-          groupId: [],
+          groupId: '',
+          area:'',
           users: [],
+          user:'',
           userId: '',
           filterUsers: [],
           newsletterId: '',
@@ -643,7 +644,7 @@
       this.$http.get('http://' + global.URL + '/v1/newsletter/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize).then((response) => {
         var arr = response.body.list;
         var YN = ['否', '是']
-        that.page.total = response.body.total
+        that.page.total = response.body.total;
 
         for (let i = 0, length = arr.length; i < length; i++) {
           let o = {
@@ -691,14 +692,14 @@
             this.addIssueOptions.groups.push({
               value: res.body.list[i].circleId,
               label: res.body.list[i].name,
-              children: [],
             });
             this.interaction.groups.push({
               value: res.body.list[i].circleId,
               label: res.body.list[i].name,
-              children: [],
             });
           }
+        }else{
+          this.$message.error(res.body.message);
         }
       });
       function init() {
@@ -722,6 +723,26 @@
       init();
     },
     methods: {
+      querySearchAsync(queryString, cb) {
+        var results = queryString ? this.selectKey.issuers.filter(item=>item.value.includes(queryString)) : this.selectKey.issuers;
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+          cb(results);
+        }, 500);
+      },
+      handleSelect(item) {
+        this.issue.userId=item.id;
+      },
+      querySearchAsyncUser(queryString, cb) {
+        var results = queryString ? this.interaction.users.filter(item=>item.value.includes(queryString)) : this.interaction.users;
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+          cb(results);
+        }, 500);
+      },
+      handleSelectUser(item){
+        this.interaction.userId=item.id;
+      },
       remoteMethodInteraction(name){
         this.interaction.filterUsers = [];
         if (name !== '') {
@@ -803,6 +824,8 @@
               that.userData.push(o)
             });
             this.showPersonalNewsletter = true;
+          }else{
+            this.$message.error(res.body.message);
           }
         });
       },
@@ -832,6 +855,8 @@
           this.$http.get('http://' + global.URL + '/v1/user/find?phone=' + value).then((res) => {
             if (res.body.code == 200 || res.body.code == 201) {
               this.selectKey.issuer = res.body.list[0].userId;
+            }else{
+              this.$message.error(res.body.message);
             }
           })
         }
@@ -840,43 +865,13 @@
         this.selectKey.users = [];
         this.selectKey.issuer = '';
       },
-      interactionChangeGroups(val){
-        let obj = this.interaction.groups.filter((item)=>item.value === val[0])[0];
-        obj.children = [];
-        this.$http.get('http://' + global.URL + '/v1/region/' + val[0] + '/group').then((res) => {
-          if (res.body.code == 200 || res.body.code == 201) {
-            for (let i = 0; i < res.body.list.length; i++) {
-              let o = {
-                value: res.body.list[i].groupId,
-                label: res.body.list[i].name
-              }
-              obj.children.push(o);
-            }
-          }
-        });
-      },
-      handleItemChangeGroups(val){
-        let obj = this.addIssueOptions.groups.filter((item)=>item.value === val[0])[0];
-        obj.children = [];
-        this.$http.get('http://' + global.URL + '/v1/region/' + val[0] + '/group').then((res) => {
-          if (res.body.code == 200 || res.body.code == 201) {
-            for (let i = 0; i < res.body.list.length; i++) {
-              let o = {
-                value: res.body.list[i].groupId,
-                label: res.body.list[i].name
-              }
-              obj.children.push(o);
-            }
-          }
-        });
-      },
       getUserId(id, flag){
         this.$http.get('http://' + global.URL + '/v1/user/list/by/group/' + id + '?isVestUser=1').then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             for (let i = 0; i < res.body.list.length; i++) {
               let o = {
-                value: res.body.list[i].userId,
-                label: res.body.list[i].name,
+                value: res.body.list[i].name,
+                id: res.body.list[i].userId,
               }
               if (flag === "issuer") {
                 this.selectKey.issuers.push(o);
@@ -887,32 +882,63 @@
           }
         });
       },
+      interactionSelectArea(){
+        this.interaction.groups = [];
+        this.interaction.groupId='';
+        this.interaction.user='';
+        this.$http.get('http://' + global.URL + '/v1/region/' + this.interaction.area + '/group').then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            for (let i = 0; i < res.body.list.length; i++) {
+              let o = {
+                value: res.body.list[i].groupId,
+                label: res.body.list[i].name
+              }
+              this.interaction.groups.push(o);
+            }
+          }
+        })
+      },
+      addIssueOptionsSelectArea(){
+        this.addIssueOptions.groups = [];
+        this.addIssueOptions.groupId='';
+        this.issue.issuer='';
+        this.$http.get('http://' + global.URL + '/v1/region/' + this.addIssueOptions.area + '/group').then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            for (let i = 0; i < res.body.list.length; i++) {
+              let o = {
+                value: res.body.list[i].groupId,
+                label: res.body.list[i].name
+              }
+              this.addIssueOptions.groups.push(o);
+            }
+          }
+        })
+      },
       // 按商圈选择
       selectArea(){
         this.selectScope.group = [];
-        for (let i = 0; i < this.selectKey.area.length; i++) {
-          this.$http.get('http://' + global.URL + '/v1/region/' + this.selectKey.area[i] + '/group').then((res) => {
-            if (res.body.code == 200 || res.body.code == 201) {
-              for (let i = 0; i < res.body.list.length; i++) {
-                let o = {
-                  value: res.body.list[i].groupId,
-                  label: res.body.list[i].name
-                }
-                this.selectScope.group.push(o);
+        this.$http.get('http://' + global.URL + '/v1/region/' + this.selectKey.area + '/group').then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            for (let i = 0; i < res.body.list.length; i++) {
+              let o = {
+                value: res.body.list[i].groupId,
+                label: res.body.list[i].name
               }
+              this.selectScope.group.push(o);
             }
-          })
-        }
-
+          }
+        })
       },
-      interactionSelectGroup(ids){
+      interactionSelectGroup(val){
         this.interaction.users = [];
         this.interaction.userId = '';
-        this.getUserId(ids[1], "interaction");
+        this.interaction.user='';
+        val&&this.getUserId(val, "interaction");
       },
-      selectGroup(ids){
+      addIssueOptionsSelectGroup(val){
         this.selectKey.issuers = [];
-        this.getUserId(ids[1], "issuer");
+        this.issue.issuer='';
+        val&&this.getUserId(val, "issuer");
       },
       interactionSuccess(){
         const type = this.interaction.interactionType;
@@ -1120,7 +1146,6 @@
 
         });
       },
-
       checkAll: function (isChecked) {
         this.checked = [];
         if (isChecked) {
@@ -1179,17 +1204,17 @@
         this.interaction.publisherId = publisherId;
       },
       issueNews(){
-        var userStr = window.sessionStorage.getItem('loginLoucaUser')
-        var userObj = JSON.parse(userStr)
+        var userStr = window.sessionStorage.getItem('loginLoucaUser');
+        var userObj = JSON.parse(userStr);
         var sender = userObj.userId;
         var o = {
           "content": this.issue.content,
-          "groupId": this.addIssueOptions.groupId[1],
+          "groupId": this.addIssueOptions.groupId,
           "photo": this.issue.img,
           "sign": "0",
           "tag": '1020',
-          "userId": this.issue.issuer
-        }
+          "userId": this.issue.userId
+        };
         this.$http.post('http://' + global.URL + '/v1/newsletter', o).then((res) => {
           if (res.body.code == 200||res.body.code==201) {
             this.$message('发布成功');

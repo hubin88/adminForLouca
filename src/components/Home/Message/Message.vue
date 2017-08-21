@@ -20,12 +20,12 @@
             <el-table-column
               prop="msgId"
               label="消息ID"
-              width="200"
+              width="160"
             ></el-table-column>
             <el-table-column
               prop="kind"
               label="消息类型"
-              width="150"
+              width="100"
             ></el-table-column>
             <el-table-column
               prop="content"
@@ -34,12 +34,12 @@
             <el-table-column
               prop="way"
               label="发送方式"
-              width="250"
+              width="100"
             ></el-table-column>
             <el-table-column
               prop="state"
               label="状态"
-              width="120"
+              width="100"
             ></el-table-column>
             <el-table-column label="发送统计">
               <el-table-column
@@ -63,14 +63,14 @@
             </el-table-column>
             <el-table-column
               label="操作"
-              width="220"
+              width="150"
             >
               <template scope="scope">
                 <el-button @click="showDetail(scope.row.msgId)" size="small" type="info">查看
                 </el-button>
-                <el-button @click="editMessage(scope.row.msgId)" size="small" type="info"
-                           v-if="hasPrivileges('message_edit')">编辑
-                </el-button>
+                <!--<el-button @click="editMessage(scope.row.msgId)" size="small" type="info"-->
+                <!--v-if="hasPrivileges('message_edit')">编辑-->
+                <!--</el-button>-->
                 <el-button @click="deleteMessage(scope.row.msgId)" size="small" type="danger"
                            v-if="hasPrivileges('message_manage')">删除
                 </el-button>
@@ -95,7 +95,7 @@
     <el-card class="message_show" v-show="detail.isShowDetail">
       <div class="message_header">
         <span class="message_title">消息详情</span>
-        <i class="el-icon-close" @click="detail.isShowDetail=false"></i>
+        <i class="el-icon-close" @click="closeDetail"></i>
       </div>
       <div class="message_user">
         <span class="dy_text">用户</span>
@@ -112,13 +112,18 @@
           {{wayLabel[detail.data.way]}}
         </el-form-item>
         <el-form-item label="发送对象">
+          <el-tag type="success" v-for="item in detail.detailLabel" :key="item">
+            {{item}}
+          </el-tag>
         </el-form-item>
         <el-form-item label="发送内容">
-          {{detail.data.content}}
+          {{detail.data.way === 2 ? detail.data.templateCode : detail.data.content}}
         </el-form-item>
         <el-form-item label="人数">
+          {{detail.data.total}}
         </el-form-item>
         <el-form-item label="发送时间">
+          {{detail.data.assignTime}}
         </el-form-item>
         <el-form-item label="状态">
           {{stateLabel[detail.data.state]}}
@@ -134,82 +139,11 @@
       </div>
       <el-form :model="form" labelWidth="80px">
         <el-form-item label="发送方式">
-          <el-radio-group v-model="form.sendType">
+          <el-radio-group v-model="form.sendType" @change="changeSendType">
             <el-radio label="1">app消息</el-radio>
             <el-radio label="2">短信</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="消息类型">
-          <el-radio-group v-model="form.messageType">
-            <el-radio label="1">推广</el-radio>
-            <el-radio label="2">升级提醒</el-radio>
-            <el-radio label="3">紧急通知</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="推送目标">
-          <el-radio-group v-model="form.sendTarget">
-            <el-radio label="all">所有人</el-radio>
-            <el-radio label="some">指定目标</el-radio>
-          </el-radio-group>
-          <el-tooltip class="item" effect="dark"
-                      content="若选择指定目标，可以按条件筛选出指定的人" placement="right">
-            <i class="icon el-icon-information"></i>
-          </el-tooltip>
-        </el-form-item>
-        <template v-if="form.sendTarget!=='all'">
-          <el-form-item label="选择用户">
-            <el-select
-              v-model="form.userId"
-              filterable
-              remote
-              multiple
-              clearable
-              placeholder="请输入用户昵称"
-              :remote-method="remoteMethod"
-              :loading="loading"
-              @change="clearFilter"
-            >
-              <el-option
-                v-for="item in selectKey.users"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-            <el-tooltip class="item" effect="dark"
-                        content="若选择了特定的若干个推送目标，则不可以再按条件筛选" placement="right">
-              <i class="icon el-icon-information"></i>
-            </el-tooltip>
-          </el-form-item>
-          <template v-if="form.userId.length===0">
-            <el-form-item label="目标系统">
-              <el-radio-group v-model="form.targetType">
-                <el-radio label="all">all</el-radio>
-                <el-radio label="android">android</el-radio>
-                <el-radio label="ios">ios</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="性别标签">
-              <el-radio-group v-model="form.sexLabelId">
-                <el-radio v-for="item in label.sexLabel" :label="item.value">{{item.label}}
-                </el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="最近登录">
-              <el-radio-group v-model="form.loadingTime">
-                <el-radio v-for="item in loadingTime" :label="item.value">{{item.label}}</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="商圈社区">
-              <el-button type="primary" @click="showCommunityBox">选择商圈社区</el-button>
-              <el-tag type="success" v-for="item in form.checkedCommunity" :key="item"
-                      :closable="true"
-                      @close="removeConmmunity(item)">
-                {{item.label}}
-              </el-tag>
-            </el-form-item>
-          </template>
-        </template>
         <el-form-item v-if="form.sendType==='2'" label="短信模板" prop="messageMould">
           <el-input
             v-model="form.messageMould"
@@ -225,7 +159,6 @@
           label="发送内容"
           style="clear: right;"
           prop="content"
-          :rules="[{ required: true, message: '请输入发送内容', trigger: 'blur' },{ min: 10, max: 1000, message: '消息内容为10-1000个字符', trigger: 'blur' }]"
         >
           <el-input type="textarea" v-model="form.content" style="width: 40%" :maxlength="1000"
                     :autosize="{minRows:12}" @change="changeContent"
@@ -250,9 +183,94 @@
             </ul>
           </div>
         </el-form-item>
+        <el-form-item label="消息类型">
+          <el-radio-group v-model="form.messageType">
+            <el-radio label="1">推广</el-radio>
+            <template v-if="form.sendType!=='2'">
+              <el-radio label="2">升级提醒</el-radio>
+              <el-radio label="3">紧急通知</el-radio>
+            </template>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="推送目标"></el-form-item>
+        <el-form-item label="">
+          <el-form-item label="范围">
+            <el-radio-group v-model="form.sendTarget">
+              <el-radio v-if="form.sendType!=='2'" label="all">所有人</el-radio>
+              <el-radio label="community">选择商圈或社区</el-radio>
+              <el-radio label="some">指定用户</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="特定用户" v-if="form.sendTarget==='some'">
+            <el-select
+              v-model="form.userId"
+              filterable
+              remote
+              multiple
+              clearable
+              placeholder="请输入用户昵称"
+              :remote-method="remoteMethod"
+              :loading="loading"
+              @change="clearFilter"
+            >
+              <el-option
+                v-for="item in selectKey.users"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+            <el-tooltip class="item" effect="dark"
+                        content="输入关键字，可以搜索出包含此关键字的昵称" placement="right">
+              <i class="icon el-icon-information"></i>
+            </el-tooltip>
+          </el-form-item>
+          <template v-else>
+            <el-form-item label="商圈社区" v-if="form.sendTarget==='community'">
+              <el-button type="primary" @click="showCommunityBox">选择商圈社区</el-button>
+              <el-tag type="success" v-for="item in form.checkedCommunity" :key="item"
+                      :closable="true"
+                      @close="removeConmmunity(item)">
+                {{item.label}}
+              </el-tag>
+            </el-form-item>
+            <el-form-item label="过滤选项"></el-form-item>
+            <el-form-item label="">
+              <el-form-item label="性别">
+                <el-radio-group v-model="form.sexLabelId">
+                  <el-radio v-for="item in label.sexLabel" :label="item.value">{{item.label}}
+                  </el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="系统">
+                <el-radio-group v-model="form.targetType">
+                  <el-radio label="all">all</el-radio>
+                  <el-radio label="android">android</el-radio>
+                  <el-radio label="ios">ios</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="最近登录">
+                <el-radio-group v-model="form.loadingTime">
+                  <el-radio v-for="item in loadingTime" :label="item.value">{{item.label}}
+                  </el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-form-item>
+          </template>
+        </el-form-item>
+        <el-form-item label="发送时间" style="margin-top: 10px;">
+          <el-date-picker
+            v-model="form.timing"
+            type="datetime"
+            clearable
+            @change="choseTiming"
+            placeholder="选择日期时间,默认为5分钟后"
+            :picker-options="pickerBeginDateBefore"
+          >
+          </el-date-picker>
+        </el-form-item>
         <el-form-item style="margin-top: 20px;">
-          <el-button type="primary" @click="sureSendNow(edit.type,true)">立即群发</el-button>
-          <el-button @click="timingSend">定时发送</el-button>
+          <el-button type="primary" @click="sureSendNow(edit.type)">立即群发</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -260,7 +278,8 @@
     <el-dialog title="选择商圈社区" v-model="showCommitySelecter" size="small">
       <div style="margin-top: -20px;">
         <el-tooltip class="item" effect="dark"
-                    content="点击搜索，会搜索该城市或者商圈下的所有子选项，若勾选城市或商圈则不能再搜索，表示选择所有子选项" placement="right">
+                    content="点击搜索，会搜索该城市或者商圈下的所有子选项，若勾选城市或商圈则不能再搜索下一级待选项，表示选择所有下一级选项"
+                    placement="right">
           <i class="icon el-icon-information"></i>
         </el-tooltip>
       </div>
@@ -275,10 +294,12 @@
             <el-checkbox-group v-model="selectKey.city.checkedCity" @change="changeCity">
               <div v-for="item in selectKey.city.cityName" style="padding-left: 20px;">
                 <el-checkbox :label="item"
-                             :key="item">{{item}}
+                             :key="item"
+                >{{item}}
                 </el-checkbox>
-                <el-button type="primary" icon="search" size="mini" @click="searchTrading(item)">
-                  搜索
+                <el-button v-if="!selectKey.city.checkedCity.includes(item)" type="primary"
+                           icon="search" size="mini" @click="searchTrading(item)">
+                  显示下一级待选项
                 </el-button>
               </div>
             </el-checkbox-group>
@@ -294,10 +315,12 @@
             <el-checkbox-group v-model="selectKey.trading.checkedTrading" @change="changeTrading">
               <div v-for="item in selectKey.trading.tradingName" style="padding-left: 20px;">
                 <el-checkbox :label="item"
-                             :key="item">{{item}}
+                             :key="item"
+                >{{item}}
                 </el-checkbox>
-                <el-button type="primary" icon="search" size="mini" @click="searchCommunity(item)">
-                  搜索
+                <el-button v-if="!selectKey.trading.checkedTrading.includes(item)" type="primary"
+                           icon="search" size="mini" @click="searchCommunity(item)">
+                  显示下一级待选项
                 </el-button>
               </div>
             </el-checkbox-group>
@@ -309,6 +332,14 @@
                          v-model="selectKey.community.checkAll"
                          @change="checkAllCommunity">全选
             </el-checkbox>
+            <el-input
+              placeholder="请输入关键字"
+              icon="search"
+              v-model="selectKey.community.searchKey"
+              @change="handleIconClick"
+              style="width: 200px;float: right;"
+            >
+            </el-input>
             <br>
             <el-checkbox-group v-model="selectKey.community.checkedCommunity"
                                @change="changeCommunity">
@@ -326,30 +357,15 @@
                         <el-button type="primary" @click="sureSelectCommity">确 定</el-button>
                     </span>
     </el-dialog>
-    <!--定时发送-->
-    <el-dialog title="定时发送" v-model="showTimingSelecter" size="tiny">
-      <el-date-picker
-        v-model="form.timing"
-        type="datetime"
-        clearable
-        @change="choseTiming"
-        placeholder="选择日期时间"
-        :picker-options="pickerBeginDateBefore"
-      >
-      </el-date-picker>
-      <span slot="footer" class="dialog-footer">
-                        <el-button @click="showTimingSelecter = false">取 消</el-button>
-                        <el-button type="primary" @click="sureSelectTiming">确 定</el-button>
-                    </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
   export default {
     name: 'allMessage',
-    data () {
+    data() {
       return {
+        waiting: false,
         loading: false,
         activeName: "全部消息",
         userId: JSON.parse(window.sessionStorage.getItem('loginLoucaUser')).userId,
@@ -368,6 +384,7 @@
             cityName: ["深圳"],
             checkAll: true,
             isIndeterminate: true,
+            currentCity: '',
           },
           trading: {
             options: [],
@@ -375,6 +392,7 @@
             tradingName: [],
             checkAll: true,
             isIndeterminate: true,
+            currentTrading: '',
           },
           community: {
             options: [],
@@ -382,6 +400,7 @@
             communityName: [],
             checkAll: true,
             isIndeterminate: true,
+            searchKey: '',
           },
         },
         label: {
@@ -415,9 +434,8 @@
           3: "紧急通知",
         },
         wayLabel: {
-          2: "限APP内",
-          3: "限短信",
-          1: "混合(先APP内，失败再短信)",
+          1: "限APP内",
+          2: "限短信",
         },
         stateLabel: {
           0: "草稿",
@@ -427,6 +445,19 @@
         detail: {
           isShowDetail: false,
           data: {},
+          detailLabel: [],
+          sexLabel: {
+            1: "男",
+            2: "女",
+          },
+          login: {
+            7: '最近一周有登录',
+            30: '最近一月有登录',
+          },
+          nologin: {
+            7: '最近一周未登录',
+            30: '最近一月未登录',
+          },
         },
         edit: {
           editId: "",
@@ -503,7 +534,6 @@
           timing: "",
           userId: [],
         },
-        timing: "",
         pickerBeginDateBefore: {
           disabledDate: (time) => time.getTime() < new Date().getTime(),
         },
@@ -519,7 +549,7 @@
       this.resetData();
       (function init() {
         $('.message_show .el-card__body').css({
-          padding: 0
+          padding: 0,
         });
         $('.el-card__body .el-form').css({
           width: "100%",
@@ -532,27 +562,27 @@
       })();
     },
     methods: {
-      prevImg(){
+      prevImg() {
         if (this.curIndex === 0) {
           this.curIndex = 3;
         } else {
           this.curIndex--;
         }
       },
-      nextImg(){
+      nextImg() {
         if (this.curIndex === 3) {
           this.curIndex = 0;
         } else {
           this.curIndex++;
         }
       },
-      clearFilter(){
+      clearFilter() {
         this.form.targetType = "all";
         this.form.loadingTime = "";
         this.form.checkedCommunity = [];
         this.form.sexLabelId = "";
       },
-      remoteMethod(name){
+      remoteMethod(name) {
         this.selectKey.users = [];
         if (name !== '') {
           this.loading = true;
@@ -572,19 +602,16 @@
           }, 500);
         }
       },
-      timingSend(){
-        this.timing = "";
-        this.form.timing = "";
-        this.showTimingSelecter = true;
-      },
-      sureSelectTiming(){
-        this.showTimingSelecter = false;
-        this.sureSendNow(this.edit.type, false);
-      },
-      choseTiming(val){
+      choseTiming(val) {
         this.form.timing = val;
       },
-      editMessage(id){
+      changeSendType(val) {
+        if (val === '2') {
+          this.form.messageType = "1";
+          this.form.sendTarget = "some";
+        }
+      },
+      editMessage(id) {
         this.resetForm();
         this.edit.editId = id;
         this.$http.get('http://' + global.URL + '/v1/message/push/' + id).then(res => {
@@ -598,6 +625,13 @@
               sendTarget: obj.goal.all ? "all" : "some",
               content: obj.content,
             });
+            if (obj.goal.all) {
+              this.form.sendTarget = 'all';
+            } else if (obj.goal.receiver) {
+              this.form.sendTarget = 'some';
+            } else {
+              this.form.sendTarget = 'community'
+            }
             if (obj.templateCode) {
               this.form.messageMould = obj.templateCode;
             }
@@ -655,19 +689,22 @@
                 }
               }
             }
+          } else {
+            this.$message.error(res.body.message);
           }
         });
       },
-      addNewMessage(){
+      addNewMessage() {
         this.edit.isShowEdit = true;
         this.edit.type = "post";
         this.resetForm();
       },
-      showCommunityBox(){
+      showCommunityBox() {
         this.showCommitySelecter = true;
         this.resetSelectCommunity();
+        this.searchTrading(this.selectKey.city.cityName);
       },
-      resetSelectCommunity(){
+      resetSelectCommunity() {
         Object.assign(this.selectKey, {
           city: {
             options: [{ label: "深圳", value: 0 }],
@@ -695,18 +732,26 @@
       /*
        * 选择城市
        * */
-      checkAllCity(event){
+      checkAllCity(event) {
         this.selectKey.city.checkedCity = event.target.checked ? this.selectKey.city.cityName : [];
         this.selectKey.city.isIndeterminate = false;
       },
-      changeCity(value){
+      changeCity(value) {
         const checkedCount = value.length;
         this.selectKey.city.checkAll = checkedCount === this.selectKey.city.cityName.length;
         this.selectKey.city.isIndeterminate = checkedCount > 0 && checkedCount < this.selectKey.city.cityName.length;
         this.selectKey.city.checkedCity = value;
+        if (value.includes(this.selectKey.city.currentCity)) {
+          this.selectKey.trading.tradingName = [];
+          this.selectKey.trading.options = [];
+          this.selectKey.community.communityName = [];
+          this.selectKey.community.options = [];
+        }
       },
-      searchTrading(value){
-        if (this.selectKey.city.checkedCity.includes(value)) return false;
+      searchTrading(value) {
+        if (this.waiting) return false;
+        this.waiting = true;
+        this.selectKey.city.currentCity = value;
         Object.assign(this.selectKey.trading, {
           options: [],
           checkedTrading: [],
@@ -715,6 +760,7 @@
           isIndeterminate: true,
         });
         this.$http.get('http://' + global.URL + '/v1/region?page=1&limit=999').then((res) => {
+          this.waiting = false;
           if (res.body.code == 200 || res.body.code == 201) {
             const arr = res.body.list || [];
             arr.forEach(item => {
@@ -724,24 +770,32 @@
                 value: item.circleId,
               });
             });
+          } else {
+            this.$message.error(res.body.message);
           }
         });
       },
       /*
        * 选择商圈
        * */
-      checkAllTrading(event){
+      checkAllTrading(event) {
         this.selectKey.trading.checkedTrading = event.target.checked ? this.selectKey.trading.tradingName : [];
         this.selectKey.trading.isIndeterminate = false;
       },
-      changeTrading(value){
+      changeTrading(value) {
         const checkedCount = value.length;
         this.selectKey.trading.checkAll = checkedCount === this.selectKey.trading.tradingName.length;
         this.selectKey.trading.isIndeterminate = checkedCount > 0 && checkedCount < this.selectKey.trading.tradingName.length;
         this.selectKey.trading.checkedTrading = value;
+        if (value.includes(this.selectKey.trading.currentTrading)) {
+          this.selectKey.community.communityName = [];
+          this.selectKey.community.options = [];
+        }
       },
-      searchCommunity(value){
-        if (this.selectKey.trading.checkedTrading.includes(value)) return false;
+      searchCommunity(value) {
+        if (this.waiting) return false;
+        this.waiting = true;
+        this.selectKey.trading.currentTrading = value;
         Object.assign(this.selectKey.community, {
           options: [],
           checkedCommunity: [],
@@ -751,6 +805,7 @@
         });
         const val = this.selectKey.trading.options.filter(item => item.label === value).pop().value;
         this.$http.get('http://' + global.URL + '/v1/region/' + val + '/group').then((res) => {
+          this.waiting = false;
           if (res.body.code == 200 || res.body.code == 201) {
             const arr = res.body.list || [];
             arr.forEach(item => {
@@ -760,23 +815,25 @@
                 value: item.groupId,
               });
             });
+          } else {
+            this.$message.error(res.body.message);
           }
         });
       },
       /*
        * 选择社区
        * */
-      checkAllCommunity(event){
+      checkAllCommunity(event) {
         this.selectKey.community.checkedCommunity = event.target.checked ? this.selectKey.community.communityName : [];
         this.selectKey.community.isIndeterminate = false;
       },
-      changeCommunity(value){
+      changeCommunity(value) {
         const checkedCount = value.length;
         this.selectKey.community.checkAll = checkedCount === this.selectKey.community.communityName.length;
         this.selectKey.community.isIndeterminate = checkedCount > 0 && checkedCount < this.selectKey.community.communityName.length;
         this.selectKey.community.checkedCommunity = value;
       },
-      sureSelectCommity(){
+      sureSelectCommity() {
         const arr = [];
         this.selectKey.trading.options.filter(item => {
           if (this.selectKey.trading.checkedTrading.includes(item.label)) {
@@ -797,13 +854,21 @@
         this.form.checkedCommunity = arr;
         this.showCommitySelecter = false;
       },
-      removeConmmunity(val){
+      removeConmmunity(val) {
         this.form.checkedCommunity = this.form.checkedCommunity.filter(item => item !== val);
       },
-      changeContent(val){
+      handleIconClick() {
+        const arr = this.selectKey.community.options.filter(item => item.label.includes(this.selectKey.community.searchKey));
+        this.selectKey.community.communityName = [];
+        arr.forEach(item => {
+          this.selectKey.community.communityName.push(item.label);
+        });
+        console.log(this.selectKey.community.communityName);
+      },
+      changeContent(val) {
         this.remainNum = val.length;
       },
-      sureSendNow(type, sendType){
+      sureSendNow(type) {
         const trading = this.form.checkedCommunity.filter(item => this.selectKey.trading.checkedTrading.includes(item.label));
         const community = this.form.checkedCommunity.filter(item => this.selectKey.community.checkedCommunity.includes(item.label));
         const obj = {
@@ -822,16 +887,20 @@
         if (type === "put") {
           obj.msgId = this.edit.editId;
         }
-        if (!sendType && !!this.form.timing) {
+        if (this.form.timing) {
           obj.assignTime = this.form.timing;
+        } else {
+          obj.assignTime = this.dateFormat(new Date().getTime() + 300 * 1000);
         }
         if (this.form.sendTarget !== "all") {
           obj.goal.all = false;
-          obj.goal.system = this.form.targetType;
+          if (this.form.targetType !== "all") {
+            obj.goal.system = this.form.targetType;
+          }
           if (this.form.sexLabelId) {
             obj.goal.sex = this.form.sexLabelId;
           }
-          if (this.form.userId.length > 0) {
+          if (this.form.sendTarget === "some" && this.form.userId.length > 0) {
             obj.goal.userId = this.form.userId;
           }
           if (this.form.loadingTime) {
@@ -875,15 +944,15 @@
           }
         });
       },
-      sureAddLabel(){
+      sureAddLabel() {
         if (this.addLabel) {
           this.label.activeLabel.push(this.addLabel);
           this.addLabel = "";
         }
       },
-      resetForm(){
+      resetForm() {
         Object.assign(this.form, {
-          sendType: "2",
+          sendType: "1",
           messageType: "1",
           targetType: "all",
           sendTarget: "all",
@@ -896,24 +965,59 @@
         });
         this.remainNum = 0;
       },
-      closeEdit(){
+      closeEdit() {
         this.edit.isShowEdit = false;
       },
-      showDetail(id){
+      closeDetail() {
+        this.detail.isShowDetail = false;
+        this.detail.detailLabel = [];
+      },
+      showDetail(id) {
         this.detail.isShowDetail = true;
         this.$http.get('http://' + global.URL + '/v1/message/push/' + id).then((res) => {
           if (res.body.code === 200) {
             this.detail.data = res.body.data || {};
+            if (this.detail.data.goal.all) {
+              this.detail.detailLabel.push('所有人');
+            }
+            if (this.detail.data.goal.receiver) {
+              this.detail.data.goal.receiver.forEach(item => {
+                this.detail.detailLabel.push(item.name)
+              });
+            }
+            if (this.detail.data.goal.groups) {
+              this.detail.data.goal.groups.forEach(item => {
+                this.detail.detailLabel.push(item.name)
+              })
+            }
+            if (this.detail.data.goal.regions) {
+              this.detail.data.goal.regions.forEach(item => {
+                this.detail.detailLabel.push(item.name)
+              });
+            }
+            if (this.detail.data.goal.sex) {
+              this.detail.detailLabel.push(this.detail.sexLabel[this.detail.data.goal.sex]);
+            }
+            if (this.detail.data.goal.system) {
+              this.detail.detailLabel.push(this.detail.data.goal.system);
+            }
+            if (this.detail.data.goal.login) {
+              this.detail.detailLabel.push(this.detail.login[this.detail.data.goal.login]);
+            }
+            if (this.detail.data.goal.nologin) {
+              this.detail.detailLabel.push(this.detail.nologin[this.detail.data.goal.nologin]);
+            }
+          } else {
+            this.$message.error(res.body.message);
           }
         });
       },
-      deleteMessage(id){
+      deleteMessage(id) {
         this.$confirm('确定删除吗?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          console.log(id);
           this.$http.delete('http://' + global.URL + '/v1/message/push/' + id).then((res) => {
             if (res.body.code == 200 || res.body.code == 201) {
               this.$message({
@@ -930,7 +1034,7 @@
           });
         });
       },
-      resetData(){
+      resetData() {
         this.$http.get('http://' + global.URL + '/v1/message/push?limit=' + this.page.pageSize + '&page=' + this.page.currentPage).then((res) => {
           if (res.body.code === 200) {
             const arr = res.body.list || [];
@@ -942,8 +1046,11 @@
                 kind: this.kindLabel[item.kind],
                 way: this.wayLabel[item.way],
                 state: this.stateLabel[item.state],
+                content: item.way === 2 ? item.templateCode : item.content,
               });
             });
+          } else {
+            this.$message.error(res.body.message);
           }
         });
       },
@@ -1241,7 +1348,7 @@
   .el-form-item__content .el-button, .el-form-item__content .el-tag {
     margin: 0 10px 5px 0;
     display: inline-block;
-    width: 130px;
+    min-width: 130px;
   }
 
   .el-form-item__content .el-input {

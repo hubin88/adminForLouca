@@ -2,7 +2,9 @@
   <div>
     <el-tabs class="tabs_box" v-model="activeName">
       <el-tab-pane label="角色" name="total">
-        <el-button class="create" type="primary" @click="createRole=true" v-if="hasPrivileges('role_edit')">创建角色</el-button>
+        <el-button class="create" type="primary" @click="createRole=true"
+                   v-if="hasPrivileges('role_add')">创建角色
+        </el-button>
         <table class="total table">
           <tr>
             <th>角色名称</th>
@@ -16,9 +18,11 @@
               <!--<a href="javascript:void(0)" @click="showAuthorityList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑角色权限</a>-->
               <!--<a href="javascript:void(0)" @click="showRoleList(item.roleId)" v-if="hasPrivileges('role_edit')">查看和编辑用户</a>-->
               <!--<a href="javascript:void(0)" @click="delteRole(item.roleId)" v-if="hasPrivileges('role_manage')">删除角色</a>-->
-              <a href="javascript:void(0)" @click="showAuthorityList(item.roleId)">查看和编辑角色权限</a>
+              <a href="javascript:void(0)" @click="showAuthorityList(item.roleId)"
+                 v-if="hasPrivileges('role_edit')">查看和编辑角色权限</a>
               <a href="javascript:void(0)" @click="showRoleList(item.roleId)">查看和编辑用户</a>
-              <a href="javascript:void(0)" @click="delteRole(item.roleId)">删除角色</a>
+              <a href="javascript:void(0)" @click="delteRole(item.roleId)"
+                 v-if="hasPrivileges('role_edit')">删除角色</a>
             </td>
           </tr>
         </table>
@@ -67,7 +71,9 @@
       <!--用户列表-->
       <el-dialog title="角色下成员" v-model="showUsers" @close="closeUsersList">
         <div class="table_handle">
-          <el-button style="float:right" @click="showAddUser">添加用户</el-button>
+          <el-button style="float:right" @click="showAddUser" v-if="hasPrivileges('role_manage')">
+            添加用户
+          </el-button>
         </div>
         <table class="table">
           <tr>
@@ -81,14 +87,17 @@
             <td>{{item.name}}</td>
             <td>{{item.phone}}</td>
             <td class="operation">
-              <a href="javascript:void(0)" @click="deleteUser(item.userId)" v-if="hasPrivileges('permission_manage')">删除用户</a>
+              <a href="javascript:void(0)" @click="deleteUser(item.userId)"
+                 v-if="hasPrivileges('role_manage')">删除用户</a>
             </td>
           </tr>
         </table>
       </el-dialog>
       <!--      权限列表      -->
       <el-tab-pane label="权限" name="权限管理">
-        <el-button class="create" type="primary" @click="addItem(0)" v-if="hasPrivileges('permission_add')">添加父级权限</el-button>
+        <el-button class="create" type="primary" @click="addItem(0)"
+                   v-if="hasPrivileges('permission_add')">添加父级权限
+        </el-button>
         <div class="el-tree">
           <div class="el-tree-node" :class="{'is-expanded':item.isShowChildren}"
                v-for="item in authorityList">
@@ -105,10 +114,18 @@
               </label>
               <span class="el-tree-node__label"
                     @click="item.isShowChildren=!item.isShowChildren">{{item.label}}/{{item.symbol}}</span>
-              <el-button size="mini" @click="changeState(item)" v-if="hasPrivileges('permission_manage')">停用</el-button>
-              <el-button size="mini" @click="deleteItem(item)" v-if="hasPrivileges('permission_manage')">删除</el-button>
-              <el-button size="mini" @click="edit(item)" v-if="hasPrivileges('permission_edit')">编辑</el-button>
-              <el-button size="mini" @click="addItem(item.id)" v-if="hasPrivileges('permission_add')">添加子权限</el-button>
+              <el-button size="mini" @click="changeState(item)"
+                         v-if="hasPrivileges('permission_manage')">停用
+              </el-button>
+              <el-button size="mini" @click="deleteItem(item)"
+                         v-if="hasPrivileges('permission_manage')">删除
+              </el-button>
+              <el-button size="mini" @click="edit(item)" v-if="hasPrivileges('permission_edit')">
+                编辑
+              </el-button>
+              <el-button size="mini" @click="addItem(item.id)"
+                         v-if="hasPrivileges('permission_add')">添加子权限
+              </el-button>
             </div>
             <div class="el-tree-node__children">
               <div class="el-tree-node is-expanded" v-for="val in item.children">
@@ -121,9 +138,15 @@
                     </span>
                   </label>
                   <span class="el-tree-node__label">{{val.label}}/{{val.symbol}}</span>
-                  <el-button size="mini" @click="changeState(val)" v-if="hasPrivileges('permission_manage')">停用</el-button>
-                  <el-button size="mini" @click="deleteItem(val)" v-if="hasPrivileges('permission_manage')">删除</el-button>
-                  <el-button size="mini" @click="edit(val)" v-if="hasPrivileges('permission_edit')">编辑</el-button>
+                  <el-button size="mini" @click="changeState(val)"
+                             v-if="hasPrivileges('permission_manage')">停用
+                  </el-button>
+                  <el-button size="mini" @click="deleteItem(val)"
+                             v-if="hasPrivileges('permission_manage')">删除
+                  </el-button>
+                  <el-button size="mini" @click="edit(val)" v-if="hasPrivileges('permission_edit')">
+                    编辑
+                  </el-button>
                 </div>
                 <div class="el-tree-node__children"></div>
               </div>
@@ -152,7 +175,7 @@
       v-model="createRole"
       size="tiny"
     >
-      <el-form label-width="100px" :model="newRole">
+      <el-form label-width="120px" :model="newRole">
         <el-form-item label="角色名称">
           <el-input v-model="newRole.name"></el-input>
         </el-form-item>
@@ -175,7 +198,7 @@
       size="tiny"
       @close="resetAddAuthority"
     >
-      <el-form label-width="100px" :model="addAuthority">
+      <el-form label-width="120px" :model="addAuthority">
         <el-form-item label="权限名称">
           <el-input v-model="addAuthority.name"></el-input>
         </el-form-item>
@@ -198,7 +221,7 @@
       size="tiny"
       @close="resetEditAuthority"
     >
-      <el-form label-width="100px" :model="editAuthority">
+      <el-form label-width="120px" :model="editAuthority">
         <el-form-item label="权限名称">
           <el-input v-model="editAuthority.name"></el-input>
         </el-form-item>
@@ -231,7 +254,7 @@
 <script>
   export default {
     name: 'authority',
-    data () {
+    data() {
       return {
         roleId: '',
         userId: JSON.parse(window.sessionStorage.getItem('loginLoucaUser')).userId,
@@ -254,14 +277,14 @@
           remark: "",
           parentId: 0,
         },
-        parentIds:[],
+        parentIds: [],
         editAuthority: {
           isShowEdit: false,
           name: "",
           state: "",
           remark: "",
           parentId: 0,
-          privilegeId:"",
+          privilegeId: "",
         },
         addUser: {
           isShowAdd: false,
@@ -292,7 +315,7 @@
                 id: item.privilegeId,
                 label: item.name,
                 symbol: item.symbol,
-                remark:item.remark,
+                remark: item.remark,
                 parentId: item.parentId,
                 isCheck: false,
                 children: [],
@@ -310,7 +333,7 @@
                     id: item.privilegeId,
                     label: item.name,
                     symbol: item.symbol,
-                    remark:item.remark,
+                    remark: item.remark,
                     parentId: item.parentId,
                     isCheck: false,
                   });
@@ -344,7 +367,7 @@
       })()
     },
     methods: {
-      deleteUser(id){
+      deleteUser(id) {
         this.$confirm('是否确定删除?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -375,7 +398,7 @@
           });
         });
       },
-      delteRole(id){
+      delteRole(id) {
         this.$confirm('是否确定删除?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -402,12 +425,12 @@
           });
         });
       },
-      showAddUser(){
+      showAddUser() {
         this.addUser.phone = '';
         this.addUser.groupId = [];
         this.addUser.isShowAdd = true;
       },
-      sureAddUser(){
+      sureAddUser() {
         this.$http.get('http://' + global.URL + '/v1/user/find/phone/' + this.addUser.phone).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             const obj = {
@@ -446,13 +469,13 @@
           }
         });
       },
-      cnacelCreate(){
+      cnacelCreate() {
         this.createRole = false;
         this.newRole.name = "";
         this.newRole.symbol = "";
         this.newRole.description = "";
       },
-      sureCreate(){
+      sureCreate() {
         let obj = {
           name: this.newRole.name,
           symbol: this.newRole.symbol,
@@ -479,7 +502,7 @@
           }
         });
       },
-      formatTime(time){
+      formatTime(time) {
         let eDate = time;
         let eYear = eDate.getFullYear();
         let eMonth = eDate.getMonth() + 1;
@@ -490,24 +513,24 @@
         var eStr = eYear + '-' + eMonth + '-' + eDay + ' ' + eHours + ':' + eMinutes + ':' + eSeconds;
         return eStr;
       },
-      stopAuthority(id){
+      stopAuthority(id) {
         this.stop.isShowShop = true;
         this.stop.time = [];
         this.stop.level = '';
         this.stop.reason = '';
         this.stop.stopId = id;
       },
-      resetEditAuthority(){
+      resetEditAuthority() {
         Object.assign(this.editAuthority, {
           isShowEdit: false,
           name: "",
           state: "",
           remark: "",
           parentId: 0,
-          privilegeId:"",
+          privilegeId: "",
         });
       },
-      sureEditAuthority(){
+      sureEditAuthority() {
         let obj = {
           name: this.editAuthority.name,
           privilegeId: this.editAuthority.privilegeId,
@@ -516,7 +539,7 @@
         if (this.editAuthority.remark) {
           Object.assign(obj, { remark: this.editAuthority.remark })
         }
-        if (this.editAuthority.state!=="") {
+        if (this.editAuthority.state !== "") {
           Object.assign(obj, { state: this.editAuthority.state })
         }
         this.$http.put('http://' + global.URL + '/v1/permission', obj).then((res) => {
@@ -536,7 +559,7 @@
                       id: item.privilegeId,
                       label: item.name,
                       symbol: item.symbol,
-                      remark:item.remark,
+                      remark: item.remark,
                       parentId: item.parentId,
                       isCheck: false,
                       children: [],
@@ -554,7 +577,7 @@
                           id: item.privilegeId,
                           label: item.name,
                           symbol: item.symbol,
-                          remark:item.remark,
+                          remark: item.remark,
                           parentId: item.parentId,
                           isCheck: false,
                         });
@@ -567,20 +590,20 @@
           }
         })
       },
-      edit(item){
-        this.parentIds= this.authorityList.filter(val => val.parentId ===0);
+      edit(item) {
+        this.parentIds = this.authorityList.filter(val => val.parentId === 0);
         Object.assign(this.editAuthority, {
           isShowEdit: true,
           name: item.label,
           remark: item.remark,
           parentId: item.parentId,
-          privilegeId:item.id,
+          privilegeId: item.id,
         });
       },
-      changeState(item){
+      changeState(item) {
 
       },
-      deleteItem(item){
+      deleteItem(item) {
         this.$confirm('确定删除吗?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -612,7 +635,7 @@
         });
 
       },
-      resetAddAuthority(){
+      resetAddAuthority() {
         Object.assign(this.addAuthority, {
           isShowAdd: false,
           name: "",
@@ -621,7 +644,7 @@
           parentId: 0,
         });
       },
-      sureAddAuthority(){
+      sureAddAuthority() {
         const obj = {
           name: this.addAuthority.name,
           symbol: this.addAuthority.symbol,
@@ -669,11 +692,11 @@
           }
         })
       },
-      addItem(id){
+      addItem(id) {
         this.addAuthority.parentId = id;
         this.addAuthority.isShowAdd = true;
       },
-      checkAllRoleAuthority(item){
+      checkAllRoleAuthority(item) {
         item.isCheck = !item.isCheck;
         if (item.hasChildren) {
           item.children.forEach((val) => {
@@ -681,18 +704,18 @@
           })
         }
       },
-      checkOneRoleAuthority(val){
+      checkOneRoleAuthority(val) {
         val.isCheck = !val.isCheck;
         this.checkedAuthority();
       },
-      checkedAuthority(){
+      checkedAuthority() {
         this.roleAuthorityList.forEach((item) => {
           if (item.hasChildren) {
             item.isCheck = item.children.every(val => val.isCheck);
           }
         });
       },
-      checkOneItem(val){
+      checkOneItem(val) {
         val.isCheck = !val.isCheck;
         this.authorityList.forEach(item => {
           if (item.hasChildren) {
@@ -700,7 +723,7 @@
           }
         });
       },
-      showRoleList(id){
+      showRoleList(id) {
         this.showUsers = true;
         this.addUser.roleId = id;
         this.$http.get('http://' + global.URL + '/v1/permission/role/' + id + '/member').then((res) => {
@@ -709,7 +732,7 @@
           }
         });
       },
-      submitRoleAuthority(){
+      submitRoleAuthority() {
         const privilegesArr = [];
         this.roleAuthorityList.forEach(item => {
           if (item.hasChildren) {
@@ -735,17 +758,17 @@
           }
         });
       },
-      closeUsersList(){
+      closeUsersList() {
         this.usersList = [];
         this.addUser.roleId = '';
         this.showUsers = false;
       },
-      closeAuthorityList(){
+      closeAuthorityList() {
         this.roleAuthorityList = [];
         this.isCheckedAuthority = [];
         this.showRoleAuthority = false;
       },
-      showAuthorityList(id){
+      showAuthorityList(id) {
         this.$http.get('http://' + global.URL + '/v1/permission/' + id + '/permission/list').then((res) => {
           if (res.body.code == 200) {
             const arr = res.body.list || [];

@@ -190,7 +190,6 @@
         }
         this.$http.post('http://' + global.URL + '/v1/wallet/tradeBills', obj).then((res) => {
 //          if (res.body.code === 200) {
-          console.log(res);
           this.transaction_data = res.body.walletList || [];
           this.page.total = res.body.count;
 //          }

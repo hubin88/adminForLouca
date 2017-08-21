@@ -65,7 +65,8 @@
               <td>{{item.createdTime}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showservice(item.serviceId)">查看</a>
-                <a href="javascript:void(0)" @click="deleteservice(item.serviceId)" v-if="hasPrivileges('service_manage')">删除</a>
+                <a href="javascript:void(0)" @click="deleteservice(item.serviceId)"
+                   v-if="hasPrivileges('service_manage')">删除</a>
               </td>
             </tr>
             </tbody>
@@ -155,7 +156,7 @@
                     placeholder="输入手机号"></el-input>
           <el-input class="organiser" v-model="servant.selectKey.name"
                     placeholder="输入服务者"></el-input>
-          <el-select v-model="servant.selectKey.tagId" clearable  placeholder="请选择标签">
+          <el-select v-model="servant.selectKey.tagId" clearable placeholder="请选择标签">
             <el-option
               v-for="item in servant.tagIds"
               :key="item.value"
@@ -164,7 +165,7 @@
             </el-option>
           </el-select>
           <!--<el-input class="organiser" v-model="servant.selectKey.tagId"-->
-                    <!--placeholder="输入标签Id"></el-input>-->
+          <!--placeholder="输入标签Id"></el-input>-->
           <el-button type="primary" @click="resetservantData">搜索</el-button>
         </div>
 
@@ -217,11 +218,14 @@
               <td>{{ serviceState(item.state) }}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="showServantDetail(item.providerId)">查看</a>
-                <a href="javascript:void(0)" @click="showSortNow(item.providerId)" v-if="hasPrivileges('service_manage')">排序</a>
+                <a href="javascript:void(0)" @click="showSortNow(item.providerId)"
+                   v-if="hasPrivileges('service_manage')">排序</a>
                 <!--<a href="javascript:void(0)" @click="deleteservant(item.providerId)">删除</a>-->
-                <a href="javascript:void(0)" @click="changeService(item.providerId,item.state)" v-if="hasPrivileges('service_manage')">{{changeState(item.state)}}</a>
+                <a href="javascript:void(0)" @click="changeService(item.providerId,item.state)"
+                   v-if="hasPrivileges('service_manage')">{{changeState(item.state)}}</a>
                 <!--<a href="javascript:void(0)" @click="remarks(item.providerId)">备注</a>-->
-                <a href="javascript:void(0)" @click="addCommunity(item.providerId)" v-if="hasPrivileges('service_manage')">添加社区</a>
+                <a href="javascript:void(0)" @click="addCommunity(item.providerId)"
+                   v-if="hasPrivileges('service_manage')">添加社区</a>
               </td>
             </tr>
             </tbody>
@@ -420,7 +424,7 @@
 <script>
   export default {
     name: 'service',
-    data () {
+    data() {
       return {
         activeName: 'first',
         servicePage: {
@@ -435,7 +439,7 @@
           pageSize: 10,
           total: 100
         },
-        showDelete:false,
+        showDelete: false,
         showserviceDetail: false,
         serviceDetail: {},
         isIndeterminate: false,
@@ -515,7 +519,7 @@
           closeReason: '',
 
           providerId: '',
-          tagIds:[],
+          tagIds: [],
           selectKey: {
             tagId: '',
             phone: '',
@@ -579,17 +583,17 @@
       this.$http.get('http://' + global.URL + '/v1/service/service/list?page=' + that.servicePage.currentPage + '&limit=' + that.servicePage.pageSize).then((res) => {
         //console.log(res);
         if (res.body.code == 200 || res.body.code == 201) {
-          console.log(res);
           this.servicePage.total = res.body.total;
           that.data = res.body.list;
           for (let i = 0; i < that.data.length; i++) {
             that.data[i].isChecked = false;
           }
+        } else {
+          this.$message.error(res.body.message);
         }
       });
 
       this.$http.get('http://' + global.URL + '/v1/service/provider/list?page=' + that.servantPage.currentPage + '&limit=' + that.servantPage.pageSize).then((res) => {
-        console.log(res);
         if (res.body.code == 200 || res.body.code == 201) {
           this.servantPage.total = res.body.total;
           that.servant.data = res.body.list;
@@ -597,18 +601,21 @@
           for (let i = 0; i < that.servant.data.length; i++) {
             that.servant.data[i].isChecked = false;
           }
+        } else {
+          this.$message.error(res.body.message);
         }
       });
 
       this.$http.get('http://' + global.URL + '/v1/tag/service/list').then((res) => {
-        console.log(res);
         if (res.body.code == 200 || res.body.code == 201) {
-          res.body.list.forEach((item)=>{
+          res.body.list.forEach((item) => {
             this.servant.tagIds.push({
-              label:item.name,
-              value:item.tagId,
+              label: item.name,
+              value: item.tagId,
             })
           });
+        } else {
+          this.$message.error(res.body.message);
         }
       });
       (function init() {
@@ -630,7 +637,7 @@
       })()
     },
     methods: {
-      serviceState(type){
+      serviceState(type) {
         var state = "";
         switch (type) {
           case 0:
@@ -651,7 +658,7 @@
         }
         return state;
       },
-      changeState(type){
+      changeState(type) {
         var state = "";
         switch (type) {
           case 0:
@@ -668,7 +675,7 @@
         }
         return state;
       },
-      resetserviceData(){
+      resetserviceData() {
         this.data = [];
         this.checked = [];
         this.showDelete = false;
@@ -705,23 +712,20 @@
         if (this.serviceSelectKey.name) {
           parameter += '&serviceName=' + this.serviceSelectKey.name;
         }
-        console.log(parameter)
         this.$http.get('http://' + global.URL + '/v1/service/service/list?page=' + that.servicePage.currentPage + '&limit=' + that.servicePage.pageSize + parameter).then((res) => {
-//				console.log(res);
-          if(res.body.code == 200 || res.body.code == 201
-      )
-        {
-//					console.log(res);
-          this.servicePage.total = res.body.total;
-          that.data = res.body.list;
-          for (let i = 0; i < that.data.length; i++) {
-            that.data[i].isChecked = false;
+          if (res.body.code == 200 || res.body.code == 201) {
+            this.servicePage.total = res.body.total;
+            that.data = res.body.list;
+            for (let i = 0; i < that.data.length; i++) {
+              that.data[i].isChecked = false;
+            }
+          } else {
+            this.$message.error(res.body.message);
           }
-        }
-      })
+        })
         ;
       },
-      resetservantData(){
+      resetservantData() {
         this.data = [];
         this.checked = [];
         this.isIndeterminate = false;
@@ -772,59 +776,52 @@
           parameter += '&name=' + this.servant.selectKey.name;
         }
 
-        console.log(parameter)
         this.$http.get('http://' + global.URL + '/v1/service/provider/list?page=' + that.servantPage.currentPage + '&limit=' + that.servantPage.pageSize + parameter)
-          .then((res)=>{
-          console.log(res);
-          if (res.body.code == 200 || res.body.code == 201) {
-            console.log(res);
-            this.servantPage.total = res.body.total;
-            that.servant.data = res.body.list;
-            for (let i = 0; i < that.servant.data.length; i++) {
-              that.servant.data[i].isChecked = false;
+          .then((res) => {
+              if (res.body.code == 200 || res.body.code == 201) {
+                console.log(res);
+                this.servantPage.total = res.body.total;
+                that.servant.data = res.body.list;
+                for (let i = 0; i < that.servant.data.length; i++) {
+                  that.servant.data[i].isChecked = false;
+                }
+              } else {
+                this.$message.error(res.body.message);
+              }
             }
-          }
-        }
-      );},
+          );
+      },
       handleSizeChangeservice(val) {
         this.servicePage.pageSize = val;
         this.resetserviceData();
-        console.log(`每页 ${val} 条`);
       },
       handleCurrentChangeservice(val) {
         this.servicePage.currentPage = val;
         this.resetserviceData();
-        console.log(`当前页: ${val}`);
       },
-      showservice(o){
-        console.log(o)
+      showservice(o) {
         this.showserviceDetail = true;
-        this.$http.get('http://' + global.URL + '/v1/service/service/' + o).then((res)=>
-        {
-          console.log(res)
-          if (res.body.code == 200) {
-            this.serviceDetail = res.body.data;
-          } else {
-            this.$message('网络错误')
+        this.$http.get('http://' + global.URL + '/v1/service/service/' + o).then((res) => {
+            if (res.body.code == 200) {
+              this.serviceDetail = res.body.data;
+            } else {
+              this.$message('网络错误')
+            }
           }
-        }
-      )
+        )
       },
-      showServantDetail(o){
-        console.log(o)
+      showServantDetail(o) {
         this.servant.showDetail = true;
-        this.$http.get('http://' + global.URL + '/v1/service/provider/' + o).then((res)=>
-        {
-          console.log(res)
-          if (res.body.code == 200) {
-            this.servant.detail = res.body.data;
-          } else {
-            this.$message('网络错误')
+        this.$http.get('http://' + global.URL + '/v1/service/provider/' + o).then((res) => {
+            if (res.body.code == 200) {
+              this.servant.detail = res.body.data;
+            } else {
+              this.$message('网络错误')
+            }
           }
-        }
-      )
+        )
       },
-      deleteservice(o){
+      deleteservice(o) {
         this.checked = []
         if (typeof o == 'object' && o.length > 0) {
           this.checked = o.join(",")
@@ -834,21 +831,21 @@
           this.showDelete = true
         }
       },
-      cancelDelete(){
+      cancelDelete() {
         this.resetserviceData();
       },
-      confirmDelete(id){
+      confirmDelete(id) {
         this.$http.delete('http://' + global.URL + '/v1/service/service?ids=' + id).then((res) => {
-          if(res.body.code == 200){
+          if (res.body.code == 200) {
+            this.resetserviceData();
+            this.$message('删除成功');
+          } else {
+            this.$message(res.body.message)
+          }
           this.resetserviceData();
-          this.$message('删除成功');
-        }else{
-          this.$message(res.body.message)
-        }
-        this.resetserviceData();
-      })},
-      deleteservant(o){
-        console.log(o)
+        })
+      },
+      deleteservant(o) {
         var ids;
         if (typeof o == 'object') {
           ids = o.join(',');
@@ -857,23 +854,22 @@
         }
 
         this.$http.delete('http://' + global.URL + '/v1/service?ids=' + ids).then((res) => {
-          if(res.body.code == 200)
-        {
-          this.resetservantData();
-          this.$message('删除成功');
-        }
-      });
+          if (res.body.code == 200) {
+            this.resetservantData();
+            this.$message('删除成功');
+          }
+        });
         this.resetserviceData();
       },
-      handleSizeChangeServant(val){
+      handleSizeChangeServant(val) {
         this.servantPage.pageSize = val;
         this.resetservantData();
       },
-      handleCurrentChangeServant(val){
+      handleCurrentChangeServant(val) {
         this.servantPage.currentPage = val;
         this.resetservantData();
       },
-      checkAll(isChecked){
+      checkAll(isChecked) {
         this.checked = [];
         if (isChecked) {
           console.log('aaa')
@@ -889,7 +885,7 @@
         this.isIndeterminate = false;
 
       },
-      checkOne(isChecked, id){
+      checkOne(isChecked, id) {
         if (isChecked) {
           this.checked.push(id)
         } else {
@@ -910,7 +906,7 @@
         }
         console.log(this.checked)
       },
-      checkAllServant(isChecked){
+      checkAllServant(isChecked) {
         this.servant.checked = [];
         if (isChecked) {
           for (let i = 0; i < this.servant.data.length; i++) {
@@ -924,7 +920,7 @@
         }
         this.servant.isIndeterminate = false;
       },
-      checkOneServant(isChecked, id){
+      checkOneServant(isChecked, id) {
         if (isChecked) {
           this.servant.checked.push(id)
         } else {
@@ -944,48 +940,44 @@
           this.servant.isIndeterminate = true;
         }
       },
-      addCommunity(id){
+      addCommunity(id) {
         this.$http.get('http://' + global.URL + '/v1/group/list?limit=1000').then((res) => {
           console.log(res)
-        if (res.body.code == 200) {
-          this.servant.showCommunity = true;
-          this.servant.providerId = id;
-          this.communityList = res.body.list;
-          console.log(this.communityList)
-        } else {
-          this.$message(res.body.message)
-        }
-      })
+          if (res.body.code == 200) {
+            this.servant.showCommunity = true;
+            this.servant.providerId = id;
+            this.communityList = res.body.list;
+          } else {
+            this.$message(res.body.message)
+          }
+        })
       },
-      choseCommunity(groupId){
-        console.log(groupId);
+      choseCommunity(groupId) {
         this.servant.community = groupId;
       },
-      submitCommunity(){
+      submitCommunity() {
         this.$http.put('http://' + global.URL + '/v1/service/provider/' + this.servant.providerId + '/group/' + this.servant.community).then((res) => {
-          console.log(res)
-        if (res.body.code == 200) {
-          this.$message('操作成功');
-          this.servant.showCommunity = false;
-          this.resetservantData();
-        } else {
-          this.$message(res.body.message)
-        }
-      });
+          if (res.body.code == 200) {
+            this.$message('操作成功');
+            this.servant.showCommunity = false;
+            this.resetservantData();
+          } else {
+            this.$message(res.body.message)
+          }
+        });
       },
-      showSortNow(id){
+      showSortNow(id) {
         this.servant.sort.providerId = id;
         this.servant.showSort = true;
       },
-      isOpenTypeChange(label){
-        console.log(this.servant.isOpenType);
+      isOpenTypeChange(label) {
         if (label === 2) {
           this.servant.isComment = true
         } else {
           this.servant.isComment = false
         }
       },
-      changeService(id, type){
+      changeService(id, type) {
         this.servant.currentId = id;
         this.servant.isOpenType = 1;
         this.servant.closeReason = '';
@@ -997,7 +989,7 @@
           this.servant.acceptance = true
         }
       },
-      submitCloseReason(){
+      submitCloseReason() {
         var obj = {
           "providerId": this.servant.currentId,
           "remark": this.servant.closeReason,
@@ -1009,19 +1001,17 @@
         }
         this.$http.put('http://' + global.URL + '/v1/service/provider/manage', obj).then((res) => {
           if (res.body.code == 200
-      )
-        {
-          this.$message('操作成功');
-          this.servant.showClose = false;
-          this.resetservantData();
-        }
-      else
-        {
-          this.$message(res.body.message)
-        }
-      })
+          ) {
+            this.$message('操作成功');
+            this.servant.showClose = false;
+            this.resetservantData();
+          }
+          else {
+            this.$message(res.body.message)
+          }
+        })
       },
-      submitOpen(){
+      submitOpen() {
         var obj = {
           "providerId": this.servant.currentId,
           "state": "1",
@@ -1030,16 +1020,16 @@
         console.log(obj);
         this.$http.put('http://' + global.URL + '/v1/service/provider/manage', obj).then((res) => {
           console.log(res)
-        if (res.body.code == 200) {
-          this.$message('操作成功');
-          this.servant.showOpen = false;
-          this.resetservantData();
-        } else {
-          this.$message(res.body.message)
-        }
-      })
+          if (res.body.code == 200) {
+            this.$message('操作成功');
+            this.servant.showOpen = false;
+            this.resetservantData();
+          } else {
+            this.$message(res.body.message)
+          }
+        })
       },
-      submitAcceptance(type){
+      submitAcceptance(type) {
         if (type == 1) {
           var obj = {
             "providerId": this.servant.currentId,
@@ -1047,15 +1037,14 @@
             "userId": JSON.parse(window.sessionStorage.getItem("loginLoucaUser")).userId,
           };
           this.$http.put('http://' + global.URL + '/v1/service/provider/manage', obj).then((res) => {
-            console.log(res)
-          if (res.body.code == 200) {
-            this.$message('操作成功');
-            this.servant.acceptance = false;
-            this.resetservantData();
-          } else {
-            this.$message(res.body.message)
-          }
-        })
+            if (res.body.code == 200) {
+              this.$message('操作成功');
+              this.servant.acceptance = false;
+              this.resetservantData();
+            } else {
+              this.$message(res.body.message)
+            }
+          })
         } else {
           var obj = {
             "providerId": this.servant.currentId,
@@ -1067,32 +1056,29 @@
             return this.$message('请输入拒绝原因，50字以内!');
           }
           this.$http.put('http://' + global.URL + '/v1/service/provider/manage', obj).then((res) => {
-            console.log(res)
+            if (res.body.code == 200) {
+              this.$message('操作成功');
+              this.servant.acceptance = false;
+              this.resetservantData();
+            } else {
+              this.$message(res.body.message)
+            }
+          })
+        }
+      },
+      sortNow() {
+        this.$http.put('http://' + global.URL + '/v1/service', this.servant.sort).then((res) => {
           if (res.body.code == 200) {
             this.$message('操作成功');
-            this.servant.acceptance = false;
+            this.servant.showSort = false;
             this.resetservantData();
           } else {
             this.$message(res.body.message)
           }
         })
-        }
       },
-      sortNow(){
-        this.$http.put('http://' + global.URL + '/v1/service', this.servant.sort).then((res) =>
-        {
-          console.log(res)
-        if (res.body.code == 200) {
-          this.$message('操作成功');
-          this.servant.showSort = false;
-          this.resetservantData();
-        } else {
-          this.$message(res.body.message)
-        }
-      })
-      },
-      }
     }
+  }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

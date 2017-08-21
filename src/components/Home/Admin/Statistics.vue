@@ -87,6 +87,8 @@
         if (response.body.code == 200) {
           this.userList = response.body.list;
           this.total=response.body.total;
+        }else{
+          this.$message.error(response.body.message);
         }
       });
       (function init() {
@@ -119,6 +121,8 @@
           if (response.body.code == 200) {
             this.userList = response.body.list;
             this.total=response.body.total;
+          }else{
+            this.$message.error(response.body.message);
           }
         });
       },

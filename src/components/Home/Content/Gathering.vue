@@ -61,8 +61,6 @@
               :value="item.value">
             </el-option>
           </el-select>
-          <!--<el-input class="organiser" v-model="partySelectKey.organiser"-->
-          <!--placeholder="发起人 id"></el-input>-->
           <el-button type="primary" @click="resetPartyData">搜索</el-button>
         </div>
 
@@ -312,10 +310,11 @@
 
 <script>
   import ElTabPane from '../../../../node_modules/element-ui/packages/tabs/src/tab-pane';
+
   export default {
     components: { ElTabPane },
     name: 'gathering',
-    data () {
+    data() {
       return {
         loading: false,
         activeName: 'first',
@@ -358,7 +357,7 @@
           }, {
             value: 6,
             label: "6天",
-          },{
+          }, {
             value: 7,
             label: "7天",
           }, {
@@ -367,7 +366,7 @@
           }, {
             value: 9,
             label: "9天",
-          },{
+          }, {
             value: 10,
             label: "10天",
           }, {
@@ -475,7 +474,7 @@
             expenses: arr[i].cost,
             state: arr[i].state,
             stick: arr[i].stick,
-            stickId:arr[i].stickId,
+            stickId: arr[i].stickId,
             applicant: {
               num: arr[i].registerNumber,
             },
@@ -524,7 +523,7 @@
     },
     methods: {
 
-      formatTime(time){
+      formatTime(time) {
         function add0(val) {
           if (val < 10) {
             return "0" + val;
@@ -542,7 +541,7 @@
         const eStr = eYear + '-' + add0(eMonth) + '-' + add0(eDay) + ' ' + add0(eHours) + ':' + add0(eMinutes) + ':' + add0(eSeconds);
         return eStr;
       },
-      setTopFun(item){
+      setTopFun(item) {
         if (item.stick) {
           this.$http.delete('http://' + global.URL + '/v1/party/cancel/stick/' + item.stickId).then(res => {
             if (res.body.code == 200 || res.body.code == 201) {
@@ -556,7 +555,7 @@
           this.setTop.selected = 3;
         }
       },
-      sureSetTop(){
+      sureSetTop() {
         this.setTop.isShow = false;
         const time = new Date().getTime() + this.setTop.selected * 24 * 3600 * 1000;
         const obj = {
@@ -568,10 +567,12 @@
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('置顶成功');
             this.resetPartyData();
+          }else{
+            this.$message.error(res.body.message);
           }
         });
       },
-      remoteMethod(name){
+      remoteMethod(name) {
         this.partySelectScope.organisers = [];
         if (name !== '') {
           this.loading = true;
@@ -591,7 +592,7 @@
           }, 500);
         }
       },
-      resetTypeData(){
+      resetTypeData() {
         this.partyType.data = [];
         this.partyType.checked = [];
         this.partyType.showDeconste = false;
@@ -616,7 +617,7 @@
 
         });
       },
-      resetPartyData(){
+      resetPartyData() {
         this.data = [];
         this.checked = [];
         this.isIndeterminate = false;
@@ -697,7 +698,7 @@
               expenses: arr[i].cost,
               state: arr[i].state,
               stick: arr[i].stick,
-              stickId:arr[i].stickId,
+              stickId: arr[i].stickId,
               applicant: {
                 num: arr[i].registerNumber,
               },
@@ -715,21 +716,20 @@
         this.partyPage.currentPage = val;
         this.resetPartyData();
       },
-      showParty(o){
+      showParty(o) {
         this.showPartyDetail = true;
         this.$http.get('http://' + global.URL + '/v1/party/detail/' + o).then((res) => {
-          console.log(res)
           if (res.body.code == 200) {
             this.partyDetail = res.body.data;
           } else {
-            this.$message('网络错误')
+            this.$message.error(res.body.message);
           }
-        })
+        });
       },
-      sortParty(id){
+      sortParty(id) {
 
       },
-      deletePartyType(o){
+      deletePartyType(o) {
         this.partyType.checked = [];
         if (typeof o == 'object' && o.length > 0) {
           this.partyType.checked = o.join(",")
@@ -739,7 +739,7 @@
           this.partyType.showDelete = true
         }
       },
-      deleteParty(o){
+      deleteParty(o) {
         this.checked = []
         if (typeof o == 'object' && o.length > 0) {
           this.checked = o.join(",")
@@ -749,17 +749,19 @@
           this.showDelete = true
         }
       },
-      cancelDeleteType(){
+      cancelDeleteType() {
         this.resetTypeData();
       },
-      cancelDelete(){
+      cancelDelete() {
         this.resetPartyData();
       },
-      confirmDelete(id){
+      confirmDelete(id) {
         this.$http.delete('http://' + global.URL + '/v1/party?ids=' + id).then((res) => {
           if (res.body.code == 200) {
             this.resetPartyData();
             this.$message('删除成功');
+          } else {
+            this.$message.error(res.body.message);
           }
         })
       },
@@ -806,7 +808,7 @@
           this.isIndeterminate = true;
         }
       },
-      checkAllType(isChecked){
+      checkAllType(isChecked) {
         this.partyType.checked = [];
         if (isChecked) {
           for (let i = 0; i < this.partyType.data.length; i++) {
@@ -820,7 +822,7 @@
         }
         this.partyType.isIndeterminate = false;
       },
-      checkOneType(isChecked, id){
+      checkOneType(isChecked, id) {
         if (isChecked) {
           this.partyType.checked.push(id)
         } else {

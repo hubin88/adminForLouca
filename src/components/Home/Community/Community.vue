@@ -41,7 +41,9 @@
               <th>动态数量</th>
               <th>经度</th>
               <th>纬度</th>
+              <th>城市</th>
               <th>所在商圈</th>
+              <th>公司汇</th>
               <th>操作</th>
             </tr>
             </thead>
@@ -59,11 +61,14 @@
               <td>{{item.dynamics.total}}</td>
               <td>{{item.longitude}}</td>
               <td>{{item.latitude}}</td>
+              <td></td>
               <td>{{item.tradingArea}}</td>
+              <td></td>
               <td class="operation">
-                <!--                                    <a href="javascript:void(0)">查看</a>-->
+                <a href="javascript:void(0)" @click="closeGroup(item.id)" v-if="hasPrivileges('group_manage')">关闭</a>
                 <a href="javascript:void(0)" @click="showEditNow(item.id)"
                    v-if="hasPrivileges('group_edit')">编辑</a>
+                <!--<a href="javascript:void(0)">开启公司汇</a>-->
               </td>
             </tr>
             </tbody>
@@ -84,9 +89,9 @@
         <el-dialog title="合并社区" v-model="showAdd">
           <div style="font-size:16px;">
             <span>合并</span>
-            <el-input-number v-model="add.fromGroupId" :min="10000" :max="100000"></el-input-number>
+            <el-input-number v-model="add.fromGroupId"></el-input-number>
             <span>社区到</span>
-            <el-input-number v-model="add.toGroupId" :min="10000" :max="100000"></el-input-number>
+            <el-input-number v-model="add.toGroupId"></el-input-number>
             <span>社区</span>
           </div>
           <p style="color:red;float:right">最终保留后面社区的id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
@@ -187,8 +192,8 @@
           content: '',
         },
         add: {
-          fromGroupId: '',
-          toGroupId: ''
+          fromGroupId: 10000,
+          toGroupId: 10000
         },
         create: {
           address: "",
@@ -259,6 +264,27 @@
       }
     },
     methods: {
+      closeGroup(id){
+          this.$confirm('确定关闭此社群吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$http.put('http://' + global.URL + '/v1/group/cancel/'+id).then((res) => {
+              if (res.body.code == 200) {
+                this.$message('操作成功');
+                this.resetData();
+              } else {
+                this.$message(res.body.message);
+              }
+            });
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消关闭'
+            });
+          });
+      },
       resetMap(){
         this.showCreate = false;
         this.showEdit = false;
@@ -301,7 +327,6 @@
         }
 
         this.$http.get('http://' + global.URL + '/v1/group/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize + parameter).then((response) => {
-          //console.log(response)
           if (!response.body.list) {
             return false;
           }
@@ -374,17 +399,20 @@
         } else {
           this.isIndeterminate = true;
         }
-        console.log(this.checked)
       },
       addNow(){
+        if(this.add.fromGroupId<10000||this.add.toGroupId<10000){
+          this.$message('社群id最小为10000');
+          return false;
+        }
         this.$http.put('http://' + global.URL + '/v1/group/from/' + this.add.fromGroupId + '/to/' + this.add.toGroupId).then((res) => {
-          console.log(res)
           if (res.body.code == 200 || res.body.code == 201) {
-            this.$message('操作成功')
+            this.$message('操作成功');
+            this.showAdd=false;
+            this.resetData();
           } else {
             this.$message(res.body.message);
           }
-
         });
       },
       createNow(){

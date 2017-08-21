@@ -6,7 +6,7 @@ import VueResource from 'vue-resource'
 import Element from 'element-ui'
 import 'element-ui/lib/theme-default/index.css'
 import App from './App'
-import Global from './static/global.js'            // 加载全局变量
+import '../static/global.js'            // 加载全局变量
 import Methods from './static/methods.js'          // 加载全局方法
 import Unload from './myComponents/unload'         // 加载Unload组件
 import Delete from './myComponents/delete.vue'
@@ -14,7 +14,7 @@ import Delete from './myComponents/delete.vue'
 Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(Element)
-Vue.use(Methods)                                   // 注册全局方法
+Vue.use(Methods)                                 // 注册全局方法
 Vue.component('my-unload', Unload)                                   // 注册全局组件
 Vue.component('delete', Delete)
 

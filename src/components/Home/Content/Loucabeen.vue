@@ -2,8 +2,33 @@
   <div class="box">
     <el-tabs v-model="activeName">
       <!--      搜索      -->
-      <el-tab-pane label="咖豆统计" name="咖豆统计">
+      <el-tab-pane label="咖豆统计" name="first">
         <div class="search_box">
+          <div class="searchText" style="width:auto">
+            <el-select v-model="selectScope.areaId" clearable placeholder="选择商圈" @change="selectAreas">
+              <el-option
+                v-for="item in selectScope.groupOptions"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+            <el-select v-model="selectKey.group" filterable clearable placeholder="选择社区">
+              <el-option
+                v-for="item in selectScope.groups"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="searchText" style="width:auto;">
+            <el-date-picker
+              v-model="selectKey.time"
+              type="datetimerange"
+              align="right"
+              placeholder="选择时间范围"
+              :picker-options="selectScope.pickerOptions">
+            </el-date-picker>
+          </div>
           <div class="searchText" style="width:200px;">
             <el-input placeholder="请输入用户名" v-model="selectKey.name"></el-input>
           </div>
@@ -33,7 +58,7 @@
               <th>社区</th>
               <th>咖豆总计</th>
               <th>今日新增</th>
-              <th>7天内新增</th>
+              <th>{{getDifferDay()}}天内新增</th>
               <th>本月新增</th>
               <th>操作</th>
             </tr>
@@ -54,7 +79,8 @@
               <td>{{item.sevenDay}}</td>
               <td>{{item.month}}</td>
               <td class="operation">
-                <a href="javascript:void(0)" @click="addBeen(item.id)" v-if="hasPrivileges('been_add')">添加咖豆</a>
+                <a href="javascript:void(0)" @click="addBeen(item.id)"
+                   v-if="hasPrivileges('been_add')">添加咖豆</a>
               </td>
             </tr>
             </tbody>
@@ -89,23 +115,28 @@
         </div>
       </el-dialog>
       <!--      咖豆明细      -->
-      <el-tab-pane label="咖豆明细" name="咖豆明细">
+      <el-tab-pane label="咖豆明细" name="second">
         <div class="search_box">
           <el-date-picker
             v-model="detail.selectKey.time"
             type="datetimerange"
             placeholder="选择时间范围">
           </el-date-picker>
-          <div class="searchText" style="width:200px;">
-            <el-cascader
-              clearable
-              v-model="detail.groupId"
-              :options="detail.groups"
-              :show-all-levels="false"
-              @active-item-change="handleItemChangeGroups"
-              @change="changeGroupId"
-              placeholder="请选择社区"
-            ></el-cascader>
+          <div class="searchText" style="width:auto;">
+            <el-select v-model="detail.areaId" clearable placeholder="选择商圈" @change="selectArea">
+              <el-option
+                v-for="item in detail.areas"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+            <el-select v-model="detail.selectKey.groupId" filterable clearable placeholder="选择社区">
+              <el-option
+                v-for="item in detail.groups"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
           </div>
           <div class="searchText" style="width:200px;">
             <el-input placeholder="请输入行为" v-model="detail.selectKey.behavior"></el-input>
@@ -128,7 +159,7 @@
 
         <div class="table_handle">
           <el-button style="visibility:hidden">占位</el-button>
-          <el-button type="success" style="float:right">导出表格</el-button>
+          <el-button type="success" style="float:right" @click="exportExcel('beenDetail')">导出表格</el-button>
         </div>
 
         <!--    列表    -->
@@ -188,9 +219,9 @@
 <script>
   export default {
     name: 'Loucabeen',
-    data () {
+    data() {
       return {
-        activeName: '咖豆统计',
+        activeName: 'first',
         page: {
           currentPage: 1,
           pageSizes: [10, 20, 50, 100, 200, 500, 1000],
@@ -209,8 +240,45 @@
         selectKey: {
           name: '',
           tel: '',
+          group: '',
+          time: '',
         },
-        selectScope: {},
+        selectScope: {
+          groupOptions: [],
+          group: [],
+          areaId:"",
+          groups:[],
+          pickerOptions: {
+            shortcuts: [{
+              text: '最近一周',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                picker.$emit('pick', [start, end]);
+              }
+            }, {
+              text: '最近一个月',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                picker.$emit('pick', [start, end]);
+              }
+            }, {
+              text: '最近三个月',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                picker.$emit('pick', [start, end]);
+              }
+            }],
+            disabledDate(value) {
+              return new Date().getTime() - value.getTime() < 0;
+            }
+          },
+        },
         data: [],
         detail: {
           createTheme: false,
@@ -224,7 +292,9 @@
           },
           checked: [],
           groups: [],
-          groupId: [],
+          groupId: '',
+          areas:[],
+          areaId:'',
           selectKey: {
             time: '',
             groupId: '',
@@ -249,11 +319,9 @@
     mounted: function () {
       var that = this;
       this.$http.get('http://' + global.URL + '/v1/integral/count/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize).then((response) => {
-        console.log(response)
         if (response.body.code == 200 || response.body.code == 201) {
           var arr = response.body.list;
           that.page.total = response.body.total
-
           for (let i = 0; i < arr.length; i++) {
             let o = {
               id: arr[i].author.userId,
@@ -267,15 +335,15 @@
             }
             that.data.push(o)
           }
-
+        }else{
+          this.$message.error(res.body.message);
         }
       });
 
       this.$http.get('http://' + global.URL + '/v1/integral/list?page=' + that.detail.page.currentPage + '&limit=' + that.detail.page.pageSize).then((response) => {
         if (response.body.code == 200 || response.body.code == 201) {
           var arr = response.body.list;
-          that.detail.page.total = response.body.total
-          console.log(arr);
+          that.detail.page.total = response.body.total;
           for (let i = 0; i < arr.length; i++) {
             let o = {
               id: arr[i].author ? arr[i].author.userId : 0,
@@ -289,23 +357,28 @@
             }
             that.detail.data.push(o)
           }
-
+        }else{
+          this.$message.error(res.body.message);
         }
       });
       this.$http.get('http://' + global.URL + '/v1/region?page=1&limit=999').then((res) => {
-        console.log('商圈选择:' + res)
         if (res.body.code == 200 || res.body.code == 201) {
           for (let i = 0; i < res.body.list.length; i++) {
             let o = {
               value: res.body.list[i].circleId,
               label: res.body.list[i].name,
-            }
-            this.detail.groups.push({
+            };
+            this.selectScope.groupOptions.push({
               value: res.body.list[i].circleId,
               label: res.body.list[i].name,
-              children: [],
+            });
+            this.detail.areas.push({
+              value: res.body.list[i].circleId,
+              label: res.body.list[i].name,
             });
           }
+        }else{
+          this.$message.error(res.body.message);
         }
       });
 
@@ -328,11 +401,14 @@
       })()
     },
     methods: {
-      addBeen(id){
+      selectGroup() {
+        this.selectKey.group = this.selectScope.group[1];
+      },
+      addBeen(id) {
         this.addBeenGroup.id = id;
         this.addBeenGroup.showAddBeen = true;
       },
-      submitAddBeen(){
+      submitAddBeen() {
         const obj = {
           "content": this.addBeenGroup.reason,
           "number": this.addBeenGroup.number,
@@ -350,7 +426,7 @@
               if (response.body.code == 200 || response.body.code == 201) {
                 var arr = response.body.list;
                 this.detail.page.total = response.body.total;
-                this.detail.data=[];
+                this.detail.data = [];
                 for (let i = 0; i < arr.length; i++) {
                   let o = {
                     id: arr[i].author ? arr[i].author.userId : 0,
@@ -364,49 +440,80 @@
                   }
                   this.detail.data.push(o)
                 }
+              }else{
+                this.$message.error(res.body.message);
               }
             });
+          }else{
+            this.$message.error(res.body.message);
           }
         })
       },
-      handleItemChangeGroups(val){
-        let obj = this.detail.groups.filter((item) => item.value === val[0])[0];
-        obj.children = [];
-        this.$http.get('http://' + global.URL + '/v1/region/' + val[0] + '/group').then((res) => {
+      selectArea() {
+        this.detail.groups=[];
+        this.detail.selectKey.groupId='';
+        this.$http.get('http://' + global.URL + '/v1/region/' + this.detail.areaId + '/group').then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             for (let i = 0; i < res.body.list.length; i++) {
               let o = {
                 value: res.body.list[i].groupId,
                 label: res.body.list[i].name
               }
-              obj.children.push(o);
+              this.detail.groups.push(o);
             }
           }
         })
       },
-      changeGroupId(){
-        this.detail.selectKey.groupId = this.detail.groupId.pop();
+     selectAreas(){
+       this.selectScope.groups=[];
+       this.selectKey.group='';
+       this.$http.get('http://' + global.URL + '/v1/region/' + this.selectScope.areaId + '/group').then((res) => {
+         if (res.body.code == 200 || res.body.code == 201) {
+           for (let i = 0; i < res.body.list.length; i++) {
+             let o = {
+               value: res.body.list[i].groupId,
+               label: res.body.list[i].name
+             }
+             this.selectScope.groups.push(o);
+           }
+         }
+       })
+     },
+      getDifferDay(){
+        if(this.selectKey.time){
+          if (Boolean(this.selectKey.time[0])){
+            const time=this.selectKey.time[1].getTime()-this.selectKey.time[0];
+            return parseInt(time/1000/3600/24);
+          }
+        }else{
+          return 7;
+        }
       },
-      resetCountData(){
+      resetCountData() {
         this.data = [];
         this.checked = [];
         this.isIndeterminate = false;
         this.isCheckedAll = false;
         var that = this;
         var parameter = '';
+        if (this.selectKey.group) {
+          parameter += '&groupId=' + this.selectKey.group;
+        }
+        if (this.selectKey.time) {
+          if (Boolean(this.selectKey.time[0])) {
+            parameter += '&startTime=' + this.formatTime(this.selectKey.time[0]) + '&endTime=' + this.formatTime(this.selectKey.time[1]);
+          }
+        }
         if (this.selectKey.name) {
           parameter += '&name=' + this.selectKey.name;
         }
         if (this.selectKey.tel) {
-          parameter += '&tel=' + this.selectKey.tel;
+          parameter += '&phoneNum=' + this.selectKey.tel;
         }
-        console.log(parameter);
         this.$http.get('http://' + global.URL + '/v1/integral/count/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize + parameter).then((response) => {
-          console.log(response)
           if (response.body.code == 200 || response.body.code == 201) {
             var arr = response.body.list;
-            that.page.total = response.body.total
-            //that.data = response.body.list;
+            that.page.total = response.body.total;
             for (let i = 0; i < arr.length; i++) {
               let o = {
                 id: arr[i].author.userId,
@@ -420,21 +527,20 @@
               }
               that.data.push(o)
             }
-
+          }else{
+            this.$message.error(res.body.message);
           }
         });
       },
       handleSizeChange(val) {
         this.page.pageSize = val;
-        console.log(`每页 ${val} 条`);
         this.resetCountData();
       },
       handleCurrentChange(val) {
         this.page.currentPage = val;
-        console.log(`当前页: ${val}`);
         this.resetCountData();
       },
-      resetDetailData(){
+      resetDetailData() {
         this.detail.data = [];
         this.detail.checked = [];
         this.detail.isIndeterminate = false;
@@ -515,36 +621,13 @@
         }
         if (this.detail.selectKey.time) {
           if (Boolean(this.detail.selectKey.time[0])) {
-            console.log(this.detail.selectKey.time)
-            let sDate = new Date(this.detail.selectKey.time[0]);
-            let sYear = sDate.getFullYear();
-            let sMonth = sDate.getMonth() + 1;
-            let sDay = sDate.getDate();
-            let sHours = sDate.getHours();
-            let sMinutes = sDate.getMinutes();
-            let sSeconds = sDate.getSeconds();
-            var sStr = sYear + '-' + sMonth + '-' + sDay + ' ' + sHours + ':' + sMinutes + ':' + sSeconds;
-
-            let eDate = new Date(this.detail.selectKey.time[1]);
-            let eYear = eDate.getFullYear();
-            let eMonth = eDate.getMonth() + 1;
-            let eDay = eDate.getDate();
-            let eHours = eDate.getHours();
-            let eMinutes = eDate.getMinutes();
-            let eSeconds = eDate.getSeconds();
-            var eStr = eYear + '-' + eMonth + '-' + eDay + ' ' + eHours + ':' + eMinutes + ':' + eSeconds;
-
-            parameter += '&startTime=' + sStr + '&endTime=' + eStr;
+            parameter += '&startTime=' + this.formatTime(this.detail.selectKey.time[0]) + '&endTime=' + this.formatTime(this.detail.selectKey.time[1]);
           }
         }
-        console.log(parameter);
-
         this.$http.get('http://' + global.URL + '/v1/integral/list?page=' + that.detail.page.currentPage + '&limit=' + that.detail.page.pageSize + parameter).then((response) => {
-          console.log(response)
           if (response.body.code == 200 || response.body.code == 201) {
             var arr = response.body.list;
             that.detail.page.total = response.body.total
-
             for (let i = 0; i < arr.length; i++) {
               let o = {
                 id: arr[i].author ? arr[i].author.userId : 0,
@@ -558,18 +641,17 @@
               }
               that.detail.data.push(o)
             }
-
+          }else{
+            this.$message.error(response.body.message);
           }
         });
       },
       handleSizeChangeDetail(val) {
         this.detail.page.pageSize = val;
-        console.log(`每页 ${val} 条`);
         this.resetDetailData();
       },
       handleCurrentChangeDetail(val) {
         this.detail.page.currentPage = val;
-        console.log(`当前页: ${val}`);
         this.resetDetailData();
       },
       checkAll: function (isChecked) {
@@ -606,12 +688,10 @@
         } else {
           this.isIndeterminate = true;
         }
-        console.log(this.checked)
       },
       checkAllDetail: function (isChecked) {
         this.detail.checked = [];
         if (isChecked) {
-          console.log('aaa')
           for (let i = 0; i < this.detail.data.length; i++) {
             this.detail.data[i].isChecked = true;
             this.detail.checked.push(this.detail.data[i].id)
@@ -643,9 +723,18 @@
         } else {
           this.detail.isIndeterminate = true;
         }
-        console.log(this.detail.checked)
       },
-
+      formatTime(time) {
+        let sDate = new Date(time);
+        let sYear = sDate.getFullYear();
+        let sMonth = sDate.getMonth() + 1;
+        let sDay = sDate.getDate();
+        let sHours = sDate.getHours();
+        let sMinutes = sDate.getMinutes();
+        let sSeconds = sDate.getSeconds();
+        var str = sYear + '-' + sMonth + '-' + sDay + ' ' + sHours + ':' + sMinutes + ':' + sSeconds;
+        return str;
+      }
     }
   }
 </script>

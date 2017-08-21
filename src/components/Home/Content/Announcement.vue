@@ -380,11 +380,9 @@
       this.action = 'http://' + global.URL + '/v1/file/upload?kind=1'
       var that = this;
       this.$http.get('http://' + global.URL + '/v1/announce/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize).then((response) => {
-        console.log(response)
         var arr = response.body.list;
         var YN = ['下线', '上线', 2, 3, 4, 5, 6, '删除'];
-        that.page.total = response.body.total
-
+        that.page.total = response.body.total?response.body.total:that.page.total;
         for (let i = 0, length = arr.length; i < length; i++) {
           let areaStr = '商圈'
           if (arr[i].scope.all) {
@@ -412,15 +410,16 @@
 
       });
       this.$http.get('http://' + global.URL + '/v1/region?page=1&limit=999').then((res) => {
-        console.log('商圈选择:' + res)
         if (res.body.code == 200 || res.body.code == 201) {
           for (let i = 0; i < res.body.list.length; i++) {
             let o = {
               value: res.body.list[i].circleId,
               label: res.body.list[i].name,
-            }
+            };
             this.selectScope.group.push(o);
           }
+        }else{
+          this.$message.error(res.body.message);
         }
       });
       (function init() {
@@ -486,8 +485,6 @@
             parameter += '&startTime=' + sStr + '&endTime=' + eStr;
           }
         }
-
-        console.log(parameter)
         this.$http.get('http://' + global.URL + '/v1/announce/list?page=' + that.page.currentPage + '&limit=' + that.page.pageSize + parameter).then((response) => {
 
           if (!response.body.list) {
@@ -572,7 +569,6 @@
       showDetailNow(o){
         this.showDetail = true;
         this.$http.get('http://' + global.URL + '/v1/announce/' + o + '/detail').then((res) => {
-          console.log(res)
           this.announceDetail = res.body.data
         })
       },
@@ -582,7 +578,6 @@
         this.edit.id = o;
         this.edit.regionId = [];
         this.$http.get('http://' + global.URL + '/v1/announce/' + o + '/detail').then((res) => {
-          console.log(res)
           this.edit.content = res.body.data.content;
           this.edit.img = res.body.data.photo ? res.body.data.photo : [];
           this.edit.label = '';
@@ -645,14 +640,15 @@
         } else {
           obj.scope.regionId = [];
         }
-        console.log(obj);
 
         this.$http.put('http://' + global.URL + '/v1/announce', obj).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             this.resetData();
             this.$message('操作成功');
+          }else{
+            this.$message.error(res.body.message);
           }
-        })
+        });
 
         this.showEdit = false;
       },
@@ -682,7 +678,6 @@
           announceIds: this.checked,
           state: state
         }
-        console.log(obj)
         if (state === '7') {
           if (this.checked.length > 0) {
             this.showDelete = true;
@@ -704,7 +699,7 @@
         var obj = {
           announceIds: id,
           state: '7'
-        }
+        };
         this.$http.put('http://' + global.URL + '/v1/announce/change/state', obj).then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             this.resetData();
