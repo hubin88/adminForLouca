@@ -567,7 +567,7 @@
           isVest: false,
           content: '',
           area: [],
-          group: [],
+          group:'',
         },
         selectScope: {
           area: [],
@@ -1085,8 +1085,8 @@
           parameter += '&userId=' + this.selectKey.issuer;
         }
 
-        if (this.selectKey.group && this.selectKey.group.length != 0) {
-          parameter += '&groups=' + this.selectKey.group.join(',');
+        if (this.selectKey.group) {
+          parameter += '&groups=' + this.selectKey.group;
         } else if (this.selectKey.area && this.selectKey.area.length != 0) {
           var strArr = []
           for (let i = 0; i < this.selectScope.group.length; i++) {

@@ -44,7 +44,7 @@
                 <ul>
                   <li class="info_list">
                     <span class="list_title">是否禁用</span>
-                    <span>{{userDetail.status===0?"是":"否"}}</span>
+                    <span>{{userDetail.status === 0 ? "是" : "否"}}</span>
                   </li>
                   <li class="info_list">
                     <span class="list_title">标签</span>
@@ -455,9 +455,9 @@
         editGroup: {
           floor: '',
           groupId: '',
-          groups:[],
+          groups: [],
           userId: '',
-          area:'',
+          area: '',
         },
         detail: {
           user_data: [],
@@ -480,7 +480,7 @@
           userKey: '',
           selectUser: '昵称',
           area: [],
-          group: [],
+          group: '',
         },
         gag: {
           showGag: false,
@@ -537,7 +537,7 @@
         addUserOptions: {
           groupId: '',
           groups: [],
-          area:'',
+          area: '',
         },
         addUser: {
           birthday: '',
@@ -761,19 +761,15 @@
         if (this.selectKey.userKey && this.selectKey.selectUser == '昵称') {
           parameter += '&name=' + this.selectKey.userKey
         }
-
-        if (this.selectKey.group && this.selectKey.group.length != 0) {
-          console.log(this.selectKey.group.length)
-          parameter += '&groupId=' + this.selectKey.group.join(',');
+        if (this.selectKey.group) {
+          parameter += '&groupId=' + this.selectKey.group;
         } else if (this.selectKey.area && this.selectKey.area.length != 0) {
           var strArr = []
           for (let i = 0; i < this.selectScope.group.length; i++) {
             strArr.push(this.selectScope.group[i].value)
           }
-
           parameter += '&groupId=' + strArr.join(',');
         }
-        ;
         this.$http.get('http://' + global.URL + '/v1/user/list?limit=' + that.page.pageSize + '&page=' + that.page.currentPage + parameter).then((response) => {
           var arr = response.body.list || [];
           that.page.total = response.body.total;

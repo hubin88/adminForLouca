@@ -26,6 +26,7 @@
               type="datetimerange"
               align="right"
               placeholder="选择时间范围"
+              @change="changeTime"
               :picker-options="selectScope.pickerOptions">
             </el-date-picker>
           </div>
@@ -58,7 +59,7 @@
               <th>社区</th>
               <th>咖豆总计</th>
               <th>今日新增</th>
-              <th>{{getDifferDay()}}天内新增</th>
+              <th>{{randomTime}}天内新增</th>
               <th>本月新增</th>
               <th>操作</th>
             </tr>
@@ -76,7 +77,7 @@
               <td>{{item.groupName}}</td>
               <td>{{item.total}}</td>
               <td>{{item.today}}</td>
-              <td>{{item.sevenDay}}</td>
+              <td>{{randomTime === 7 ? item.sevenDay : item.randomTimeData}}</td>
               <td>{{item.month}}</td>
               <td class="operation">
                 <a href="javascript:void(0)" @click="addBeen(item.id)"
@@ -246,8 +247,8 @@
         selectScope: {
           groupOptions: [],
           group: [],
-          areaId:"",
-          groups:[],
+          areaId: "",
+          groups: [],
           pickerOptions: {
             shortcuts: [{
               text: '最近一周',
@@ -280,6 +281,7 @@
           },
         },
         data: [],
+        randomTime: 7,
         detail: {
           createTheme: false,
           isIndeterminate: false,
@@ -293,8 +295,8 @@
           checked: [],
           groups: [],
           groupId: '',
-          areas:[],
-          areaId:'',
+          areas: [],
+          areaId: '',
           selectKey: {
             time: '',
             groupId: '',
@@ -335,7 +337,7 @@
             }
             that.data.push(o)
           }
-        }else{
+        } else {
           this.$message.error(res.body.message);
         }
       });
@@ -357,7 +359,7 @@
             }
             that.detail.data.push(o)
           }
-        }else{
+        } else {
           this.$message.error(res.body.message);
         }
       });
@@ -377,7 +379,7 @@
               label: res.body.list[i].name,
             });
           }
-        }else{
+        } else {
           this.$message.error(res.body.message);
         }
       });
@@ -440,18 +442,18 @@
                   }
                   this.detail.data.push(o)
                 }
-              }else{
+              } else {
                 this.$message.error(res.body.message);
               }
             });
-          }else{
+          } else {
             this.$message.error(res.body.message);
           }
         })
       },
       selectArea() {
-        this.detail.groups=[];
-        this.detail.selectKey.groupId='';
+        this.detail.groups = [];
+        this.detail.selectKey.groupId = '';
         this.$http.get('http://' + global.URL + '/v1/region/' + this.detail.areaId + '/group').then((res) => {
           if (res.body.code == 200 || res.body.code == 201) {
             for (let i = 0; i < res.body.list.length; i++) {
@@ -464,30 +466,31 @@
           }
         })
       },
-     selectAreas(){
-       this.selectScope.groups=[];
-       this.selectKey.group='';
-       this.$http.get('http://' + global.URL + '/v1/region/' + this.selectScope.areaId + '/group').then((res) => {
-         if (res.body.code == 200 || res.body.code == 201) {
-           for (let i = 0; i < res.body.list.length; i++) {
-             let o = {
-               value: res.body.list[i].groupId,
-               label: res.body.list[i].name
-             }
-             this.selectScope.groups.push(o);
-           }
-         }
-       })
-     },
-      getDifferDay(){
-        if(this.selectKey.time){
-          if (Boolean(this.selectKey.time[0])){
-            const time=this.selectKey.time[1].getTime()-this.selectKey.time[0];
-            return parseInt(time/1000/3600/24);
+      selectAreas() {
+        this.selectScope.groups = [];
+        this.selectKey.group = '';
+        this.$http.get('http://' + global.URL + '/v1/region/' + this.selectScope.areaId + '/group').then((res) => {
+          if (res.body.code == 200 || res.body.code == 201) {
+            for (let i = 0; i < res.body.list.length; i++) {
+              let o = {
+                value: res.body.list[i].groupId,
+                label: res.body.list[i].name
+              }
+              this.selectScope.groups.push(o);
+            }
           }
-        }else{
-          return 7;
+        })
+      },
+      changeTime(value) {
+        if (!value) {
+          this.randomTime = 7
+        } else {
+          this.getDifferDay()
         }
+      },
+      getDifferDay() {
+        const time = this.selectKey.time[1].getTime() - this.selectKey.time[0];
+        this.randomTime = parseInt(time / 1000 / 3600 / 24);
       },
       resetCountData() {
         this.data = [];
@@ -522,12 +525,13 @@
                 total: arr[i].integralTotal,
                 today: arr[i].todayData,
                 sevenDay: arr[i].sevenDayData,
+                randomTimeData: arr[i].randomTimeData,
                 month: arr[i].monthData,
                 isChecked: false,
               }
               that.data.push(o)
             }
-          }else{
+          } else {
             this.$message.error(res.body.message);
           }
         });
@@ -641,7 +645,7 @@
               }
               that.detail.data.push(o)
             }
-          }else{
+          } else {
             this.$message.error(response.body.message);
           }
         });
