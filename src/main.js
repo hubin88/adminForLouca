@@ -27,6 +27,7 @@ import Administration from './components/Home/Administration/Administration.vue'
 import Notification from './components/Home/Administration/Notification.vue'
 //User
 import User from './components/Home/User/User.vue'
+import Charm from './components/Home/User/Charm.vue'
 import Vest from './components/Home/User/Vest.vue'
 import FloorGroup from './components/Home/User/FloorGroup.vue'
 import LabelGroup from './components/Home/User/LabelGroup.vue'
@@ -97,7 +98,11 @@ const router = new VueRouter({
           path: 'user',
           name: 'user',
           component: User
-        }, {
+        },{
+          path: 'charm',
+          name: 'charm',
+          component: Charm,
+        },{
           path: 'vest',
           name: 'vest',
           component: Vest
@@ -206,12 +211,6 @@ const router = new VueRouter({
           name: 'account',
           component: Account
         },
-        //message
-        // {
-        //   path: 'newbuildmessage',
-        //   name: 'newbuildmessage',
-        //   component: NewBuildMessage,
-        // },
         {
           path: 'allMessage',
           name: 'allMessage',

@@ -25,8 +25,14 @@
         mounted(){
             var that = this;
             $('#'+that.mId+'_unload_btn').on('click', function() {
+                var file=$('#'+that.mId+'_unload_file').get(0).files[0];
+                var reg=/\S+\.(png|jpg|gif)/i;
+                if(!reg.test(file.name)){
+                  that.$message.error("只能上传png,jpg,gif格式的图片");
+                  return false;
+                }
                 var fd = new FormData();
-                fd.append("uploadFile", $('#'+that.mId+'_unload_file').get(0).files[0]);
+                fd.append("uploadFile", file);
                 $.ajax({
                     url: that.action,
                     type: "POST",

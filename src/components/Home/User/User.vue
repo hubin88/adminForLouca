@@ -62,7 +62,7 @@
 
                   <li class="info_list">
                     <span class="list_title">手机号</span>
-                    <span v-if="userDetail.phone">{{userDetail.phone}}</span>
+                    <span v-if="userDetail.phone" @click="showDetailTel(userDetail.userId)">{{userDetail.phone}}</span>
                     <span v-else>无</span>
                   </li>
                   <li class="info_list">
@@ -241,9 +241,10 @@
           </el-date-picker>
           <div class="searchUser" style="width:220px">
             <el-input placeholder="请输入内容" v-model="selectKey.userKey">
-              <el-select v-model="selectKey.selectUser" slot="prepend" clearable placeholder="请选择">
-                <el-option label="昵称" value="昵称"></el-option>
-                <el-option label="手机号" value="手机号"></el-option>
+              <el-select v-model="selectKey.selectUser" slot="prepend" clearable placeholder="请选择" style="width:110px" @change="clearSeletUser">
+                <el-option label="昵称,姓名" value="1"></el-option>
+                <el-option label="手机号" value="2"></el-option>
+                <el-option label="用户ID" value="3"></el-option>
               </el-select>
             </el-input>
           </div>
@@ -319,7 +320,9 @@
                   {{item.id}}
                 </el-checkbox>
               </td>
-              <td>{{item.user.name}}<br>{{item.tel}}</td>
+              <td>{{item.user.name}}<br>
+                <span @click="showTel(item.id)">{{item.tel}}</span>
+              </td>
               <td>{{item.community.name}}</td>
               <td>{{YN[item.state]}}</td>
               <td>{{item.newsletter.num}}</td>
@@ -331,8 +334,6 @@
               <td class="operation">
                 <a href="javascript:void(0)" @click="showUser(item.id)">查看</a>
                 <a href="javascript:void(0)" @click="changeGroup(item.id)" v-if="hasPrivileges('user_manage')">切换社区</a>
-                <a href="javascript:void(0)" @click="cancelAuthentication(item.id)"
-                   v-if="item.state&&hasPrivileges('user_manage')">取消认证</a>
                 <a href="javascript:void(0)" @click="showGag(item.id)" v-if="hasPrivileges('user_manage')">禁言</a>
                 <a href="javascript:void(0)" @click="disableUser(item.id)"
                    v-if="item.status&&hasPrivileges('user_manage')">禁用</a>
@@ -432,10 +433,7 @@
 </template>
 
 <script>
-  import ElTabPane from '../../../../node_modules/element-ui/packages/tabs/src/tab-pane.vue';
-
   export default {
-    components: { ElTabPane },
     name: 'user',
     data() {
       return {
@@ -478,7 +476,7 @@
           state: '',
           lastTime: '',
           userKey: '',
-          selectUser: '昵称',
+          selectUser: '',
           area: [],
           group: '',
         },
@@ -582,7 +580,7 @@
           background: 'white'
         })
         $('.searchUser .el-input-group__prepend .el-input__inner').css({
-          width: '100px'
+          width: '110px'
         })
         $('.el-card__header').css({
           background: 'rgb(65,65,73)'
@@ -596,6 +594,22 @@
       })()
     },
     methods: {
+      showDetailTel(id){
+        const viewerId = this.handler;
+        this.$http.get('http://' + global.URL + '/v1/user/phone?viewerId=' + viewerId + '&vieweeId=' + id).then((res) => {
+          if (res.body.code == 200) {
+            this.userDetail.phone = res.body.message;
+          }
+        });
+      },
+      showTel(id) {
+        const viewerId = this.handler;
+        this.$http.get('http://' + global.URL + '/v1/user/phone?viewerId=' + viewerId + '&vieweeId=' + id).then((res) => {
+          if (res.body.code == 200) {
+            this.data.filter(item => item.id === id)[0].tel = res.body.message;
+          }
+        });
+      },
       searchDetail() {
         this.$http.get('http://' + global.URL + '/v1/user/index?content=' + this.detail.searchContent + '&page=' + this.detail.page.currentPage + '&limit=' + this.detail.page.pageSize).then((res) => {
           if (res.body.code == 200) {
@@ -613,12 +627,27 @@
         this.searchDetail();
       },
       disableUser(id) {
-        this.$http.delete('http://' + global.URL + '/v1/user/disable?user=' + id).then((res) => {
-          if (res.body.code == 200) {
-            this.$message("操作成功");
-            this.resetData();
-          }
+        this.$confirm('是否禁用该用户？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http.delete('http://' + global.URL + '/v1/user/disable?user=' + id).then((res) => {
+            if (res.body.code == 200) {
+              this.$message({
+                type: 'success',
+                message: '操作成功!'
+              });
+              this.resetData();
+            }
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '取消操作'
+          });
         });
+
       },
       showGag(id) {
         this.gag.id = id;
@@ -668,6 +697,9 @@
           }
         })
       },
+      clearSeletUser(){
+        this.selectKey.userKey='';
+      },
       // 搜索函数
       searchNow() {
         var that = this;
@@ -714,11 +746,11 @@
               }
               that.data.push(o);
             })
-          }
-          if (this.selectKey.selectUser == '昵称') {
-            this.resetData();
-          } else if (this.selectKey.selectUser == '手机号') {
+          };
+          if (this.selectKey.selectUser == '2') {
             searchTel();
+          } else {
+            this.resetData();
           }
         } else {
           this.resetData()
@@ -755,11 +787,14 @@
           }
         }
         if (this.selectKey.state) {
-          console.log(this.selectKey.state)
           parameter += '&auth=' + this.selectKey.state
         }
-        if (this.selectKey.userKey && this.selectKey.selectUser == '昵称') {
-          parameter += '&name=' + this.selectKey.userKey
+        if (this.selectKey.userKey) {
+          if(this.selectKey.selectUser == '1'){
+            parameter += '&name=' + this.selectKey.userKey
+          }else{
+            parameter += '&userId=' + this.selectKey.userKey
+          }
         }
         if (this.selectKey.group) {
           parameter += '&groupId=' + this.selectKey.group;
@@ -773,7 +808,6 @@
         this.$http.get('http://' + global.URL + '/v1/user/list?limit=' + that.page.pageSize + '&page=' + that.page.currentPage + parameter).then((response) => {
           var arr = response.body.list || [];
           that.page.total = response.body.total;
-          console.log(response)
           for (let i = 0, length = arr.length; i < length; i++) {
             var Uname = arr[i].name ? arr[i].name : '';
             var Cname = arr[i].groupInfo ? arr[i].groupInfo.name : '';
@@ -850,19 +884,15 @@
         } else {
           this.isIndeterminate = true;
         }
-        console.log(this.checked)
       },
       showUser(o) {
         this.showUserDetail = true;
         this.$http.get('http://' + global.URL + '/v1/user/' + o + '/detail').then((res) => {
-          console.log(res);
           if (res.body.code == 200 || res.body.code == 201) {
             this.userDetail = res.body.data;
           } else {
             this.$message('数据有误')
           }
-        }, (res) => {
-
         });
       },
       changeGroup(o) {

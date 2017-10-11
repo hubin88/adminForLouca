@@ -489,7 +489,7 @@
         }
       },
       getDifferDay() {
-        const time = this.selectKey.time[1].getTime() - this.selectKey.time[0];
+        const time = this.selectKey.time[1].getTime() - this.selectKey.time[0].getTime();
         this.randomTime = parseInt(time / 1000 / 3600 / 24);
       },
       resetCountData() {

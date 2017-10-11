@@ -1538,6 +1538,7 @@
     border: 1px solid rgb(222, 222, 222);
     padding: 8px 12px;
     text-align: center;
+    word-wrap: break-word;
   }
 
   .table th {

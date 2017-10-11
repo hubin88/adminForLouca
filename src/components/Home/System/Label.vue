@@ -740,8 +740,8 @@
               sort: arr[i].sort,
               slogans: arr[i].slogans ? arr[i].slogans : [],
               isChecked: false,
-            }
-            this.partyLabel.data.push(o)
+            };
+            this.partyLabel.data.push(o);
           }
         }
       });
@@ -759,7 +759,7 @@
               sort: arr[i].sort,
               contain: arr[i].subTagNum,
               isChecked: false,
-            }
+            };
             this.serviceLabel.data.push(o)
           }
         }

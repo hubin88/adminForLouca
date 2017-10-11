@@ -817,6 +817,7 @@
 
   .table td {
     background: #fff;
+    word-wrap: break-word;
   }
 
   .table th {

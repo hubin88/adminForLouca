@@ -387,7 +387,13 @@
         <ul class="second_nav">
           <router-link :to="{name:'user'}" href="javascript:void(0)">
             <li class="list" v-if="hasPrivileges('user_view')"><span>用户管理</span></li>
+
           </router-link>
+          <router-link :to="{name:'charm'}" href="javascript:void(0)">
+            <li class="list" ><span>魅力值</span></li>
+          </router-link>
+
+
 
           <!--
                               <router-link :to="{name:'vest'}" href="javascript:void(0)"><li class="list"><span>马甲管理</span></li></router-link>
@@ -559,7 +565,6 @@
       }
     },
     beforeCreate: function () {
-      console.log(window.sessionStorage.getItem('loginLoucaUser'));
       if (!!window.sessionStorage.getItem('loginLoucaUser')) {
         var that = this;
         var login = window.sessionStorage.getItem('loginLoucaUser');

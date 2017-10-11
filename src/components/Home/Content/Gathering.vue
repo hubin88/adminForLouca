@@ -226,9 +226,9 @@
       <!--     聚会类型       -->
       <el-tab-pane label="聚会类型" name="second">
         <div class="search_box">
-          <el-input class="organiser" v-model="partySelectKey.organiser"
+          <el-input class="organiser" v-model="partyType.tag"
                     placeholder="搜素聚会类型"></el-input>
-          <el-button type="primary">搜索</el-button>
+          <el-button type="primary" @click="resetTypeData">搜索</el-button>
         </div>
         <el-dialog title="提示" v-model="createTypeShow" size="tiny">
           <p class="create_text">输入聚会类型</p>
@@ -239,7 +239,7 @@
           <el-input-number v-model="createType.num" :min="1" :max="10"></el-input-number>
           <span slot="footer" class="dialog-footer">
                         <el-button @click="createTypeShow = false">取 消</el-button>
-                        <el-button type="primary" @click="createTypeShow = false">确 定</el-button>
+                        <el-button type="primary" @click="addPartyTag">确 定</el-button>
                     </span>
         </el-dialog>
 
@@ -252,7 +252,7 @@
           </el-button>
         </div>
         <delete v-if="partyType.showDelete" :checked="partyType.checked" :cancel="cancelDeleteType"
-                :confirm="confirmDelete"></delete>
+                :confirm="confirmDeleteType"></delete>
         <!--                    类型列表    -->
         <div class="table_box">
           <table class="table">
@@ -283,8 +283,8 @@
               <td>{{ item.num }}</td>
               <td>{{ item.range }}</td>
               <td class="operation">
-                <a href="javascript:void(0)" @click="sortParty(item.id)"
-                   v-if="hasPrivileges('partying_manage')">排序</a>
+                <!--<a href="javascript:void(0)" @click="sortParty(item.id)"-->
+                <!--v-if="hasPrivileges('partying_manage')">排序</a>-->
                 <a href="javascript:void(0)" @click="deletePartyType(item.id)"
                    v-if="hasPrivileges('partying_manage')">删除</a>
               </td>
@@ -450,8 +450,10 @@
           isCheckedAll: false,
           isIndeterminate: false,
           checked: [],
-          data: []
-        }
+          data: [],
+          tag: '',
+        },
+        userId: JSON.parse(window.sessionStorage.getItem('loginLoucaUser')).userId,
       }
     },
     mounted: function () {
@@ -522,7 +524,20 @@
       })()
     },
     methods: {
-
+      addPartyTag() {
+        this.$http.post('http://' + global.URL + '/v1/tag', {
+          kind: "4",
+          parentId: 0,
+          photo: "string",
+          userId: this.userId,
+          words: this.createType.name,
+        }).then(res => {
+          if (res.body.code === 201) {
+            this.$message('添加成功');
+            this.resetTypeData();
+          }
+        });
+      },
       formatTime(time) {
         function add0(val) {
           if (val < 10) {
@@ -567,7 +582,7 @@
           if (res.body.code == 200 || res.body.code == 201) {
             this.$message('置顶成功');
             this.resetPartyData();
-          }else{
+          } else {
             this.$message.error(res.body.message);
           }
         });
@@ -598,10 +613,13 @@
         this.partyType.showDeconste = false;
         this.partyType.isIndeterminate = false;
         this.partyType.isCheckedAll = false;
+        this.partyType.showDelete = false;
         var that = this;
-
-        this.$http.get('http://' + global.URL + '/v1/party/tag/list?page=' + that.typePage.currentPage + '&limit=' + that.typePage.pageSize).then((response) => {
-          console.log(response)
+        var str = '';
+        if (this.partyType.tag) {
+          str += this.partyType.tag;
+        }
+        this.$http.get('http://' + global.URL + '/v1/party/tag/list?page=' + that.typePage.currentPage + '&limit=' + that.typePage.pageSize + '&content=' + str).then((response) => {
           var arr = response.body.list;
           that.typePage.total = response.body.total;
           for (let i = 0, length = arr.length; i < length; i++) {
@@ -750,15 +768,27 @@
         }
       },
       cancelDeleteType() {
+        this.partyType.showDelete = false
         this.resetTypeData();
       },
       cancelDelete() {
+        this.showDelete = false;
         this.resetPartyData();
       },
       confirmDelete(id) {
         this.$http.delete('http://' + global.URL + '/v1/party?ids=' + id).then((res) => {
           if (res.body.code == 200) {
             this.resetPartyData();
+            this.$message('删除成功');
+          } else {
+            this.$message.error(res.body.message);
+          }
+        })
+      },
+      confirmDeleteType(id) {
+        this.$http.delete('http://' + global.URL + '/v1/tag/' + id).then((res) => {
+          if (res.body.code == 200) {
+            this.resetTypeData();
             this.$message('删除成功');
           } else {
             this.$message.error(res.body.message);

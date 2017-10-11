@@ -318,7 +318,7 @@
                 name: arr[i].name
               },
               members: {
-                total: '???'
+                total: arr[i].peopleNum,
               },
               community: {
                 total: arr[i].groupNum
@@ -423,7 +423,7 @@
                   name: arr[i].name
                 },
                 members: {
-                  total: '???'
+                  total: arr[i].peopleNum,
                 },
                 community: {
                   total: arr[i].groupNum
